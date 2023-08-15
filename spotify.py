@@ -2,7 +2,7 @@ import spotipy
 from spotipy import SpotifyClientCredentials
 from spotipy.oauth2 import SpotifyOAuth
 from top_songs import get_data
-import os
+import json
 
 SPOTIPY_CLIENT_ID  = "769ae67cd8f94d9b8e8a8bdac6ad48c3" #os.getenv('SPOTIPY_CLIENT_ID')
 SPOTIPY_CLIENT_SECRET  = "856a8a2f558e4f15b2236761ebd3a1a3"#os.getenv('SPOTIPY_CLIENT_SECRET')
@@ -23,69 +23,51 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope,
                         cache_path="token.txt"))
 
 
-no_of_songs = 10
+no_of_songs = 5
 
 top_songs = []
-def get_cover_art(uri, no_of_tracks):
+def artist_top_tracks(uri, no_of_tracks):
     results = spotify.artist_top_tracks(uri)
     for track in results['tracks'][:no_of_tracks]:
         track_name = track['name']
-        cover_art = track['album']['images'][0]['url']
-        top_songs.append([track_name,cover_art])
+        top_songs.append(track_name)
     return top_songs,results['tracks'][:no_of_tracks]
 
 
-def get_dic_of_songs(no_of_songs,url):
-    titles,artists = get_data(url, no_of_songs)
-    dict_of_songs = []
-    for number in range(0,no_of_songs):
-        song = {
-            "artist": artists[number],
-            "track": titles[number]
-        }
-        dict_of_songs.append(song) 
-    return dict_of_songs  
 
+  
+def get_ids(dict_of_songs:dict):
+    all_ids = []
+    for track_dict in dict_of_songs:
+        artist = track_dict["artist"]
+        track = track_dict["track"]
+        best_song_id = get_track_id(artist,track)
+        all_ids.append(best_song_id)
+    return all_ids
 
 
 # Artist details❤
 def get_details_artist(name:str):
     artists_results = spotify.search(q=name, type="artist")
     artist_details = artists_results["artists"]["items"][0]
-    return artist_details
-# print(get_details_artist("Selena Gomez")["uri"])
+    uri = artist_details["uri"]
+    followers = artist_details["followers"]["total"]
+    images_data = artist_details["images"]
+    images = [item["url"] for item in images_data]
+    name = artist_details["name"]
+    genres = artist_details["genres"]
+    return uri,followers,images,name,genres
 
-def get_artist_image(name:str):
-    # if len(sys.argv) > 1:
-    #     name = ' '.join(sys.argv[1:])
-    # else:
-    #     name = 'Radiohead'
-
-    results = spotify.search(q=f"{name}", type='artist')
-    items = results['artists']['items']
-    if len(items) > 0:
-        artist = items[0]
-        artist_name = artist['name']
-        image = artist['images'][0]['url']
-
-        return image
 
 # Search for a track
-def search_song_id(artist:str,track:str):
+def get_track_id(artist:str,track:str):
     best_song = spotify.search(q=f"{artist}, {track}", type='track')
     best_song_id = best_song["tracks"]["items"][0]["id"]
     return best_song_id
 
 
 
-def get_ids(dict_of_songs:dict):
-    all_ids = []
-    for track_dict in dict_of_songs:
-        artist = track_dict["artist"]
-        track = track_dict["track"]
-        best_song_id = search_song_id(artist,track)
-        all_ids.append(best_song_id)
-    return all_ids
+
 
 
 # # Create a playlist and add tracks
@@ -97,7 +79,7 @@ def create_playlist(all_ids):
     return playlist_id
 
 # Get user's saved tracks
-def get_saved_tracks():
+def get_my_saved_tracks():
     all_saved = []
     results = sp.current_user_saved_tracks()
     for idx, item in enumerate(results['items']):
@@ -112,20 +94,27 @@ def get_saved_tracks():
         }
         all_saved.append(item)
     return all_saved
-def get_preview_url(id):
-    track_info = sp.track(id)
-    url = track_info['preview_url']
-    return url
 
-def get_track_coverart(track_id):
+def get_track_image(track_id):
     # Get track information
     track_info = sp.track(track_id)
 
     # Get the cover art URL
     if track_info.get('album') and track_info['album'].get('images'):
-        coverart_url = track_info['album']['images'][0]['url']
-        return coverart_url
+        image = track_info['album']['images'][0]['url']
+        return image
     else:
         return None
-# image = get_track_coverart("42VsgItocQwOQC3XWZ8JNA")
-# print(image)
+
+def get_track_details(track_id):
+    track_info = sp.track(track_id)
+    # artist = track_info["album"]["artists"][0]["name"]
+    album = track_info["album"]["name"]
+    release_date = track_info["album"]["release_date"]
+    total_tracks = track_info["album"]["total_tracks"]
+    track_no = track_info["track_number"]
+    # uri = track_info["uri"]
+    preview_url = track_info["preview_url"]
+
+    return preview_url, release_date, album, track_no,total_tracks
+

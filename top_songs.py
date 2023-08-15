@@ -48,3 +48,14 @@ def get_data(no_of_songs):
             date = datetime.now().strftime(f"%Y-%m-{day}")
             url = f"https://www.billboard.com/charts/hot-100/{date}"
     return titles,artists
+
+def get_dic_of_songs(no_of_songs,url):
+    titles,artists = get_data(url, no_of_songs)
+    dict_of_songs = []
+    for number in range(0,no_of_songs):
+        song = {
+            "artist": artists[number],
+            "track": titles[number]
+        }
+        dict_of_songs.append(song) 
+    return dict_of_songs
