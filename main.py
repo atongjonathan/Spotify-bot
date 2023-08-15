@@ -11,7 +11,8 @@ from spotify import *
 import requests,os
 from io import BytesIO
 
-bot = telebot.TeleBot(("6523079919:AAGwY9wKIY7p_dHN7sOjtyacZS5SgsEUF5w"))
+# TELEGRAM_BOT_TOKEN = 
+bot = telebot.TeleBot((os.getenv('TELEGRAM_BOT_TOKEN')))
 
 @bot.message_handler(commands=['start'])
 def welcome(message):

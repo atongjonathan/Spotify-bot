@@ -2,10 +2,10 @@ import spotipy
 from spotipy import SpotifyClientCredentials
 from spotipy.oauth2 import SpotifyOAuth
 from top_songs import get_data
-import json
+import json,os
 
-SPOTIPY_CLIENT_ID  = "769ae67cd8f94d9b8e8a8bdac6ad48c3" #os.getenv('SPOTIPY_CLIENT_ID')
-SPOTIPY_CLIENT_SECRET  = "856a8a2f558e4f15b2236761ebd3a1a3"#os.getenv('SPOTIPY_CLIENT_SECRET')
+SPOTIPY_CLIENT_ID  = os.getenv('SPOTIPY_CLIENT_ID')
+SPOTIPY_CLIENT_SECRET  = os.getenv('SPOTIPY_CLIENT_SECRET')
 # SPOTIPY_REDIRECT_URI   = os.getenv('SPOTIPY_REDIRECT_URI' )
 
 # # Authorization 
