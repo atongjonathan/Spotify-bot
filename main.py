@@ -6,7 +6,7 @@ from livescore import get_scores
 from top_songs import get_data
 from telebot import util
 import html
-from keyboards import keyboard,sport,start_markup
+from keyboards import keyboard,sport,start_markup,hide_keyboard,force_markup
 from spotify import *
 import requests,os
 from io import BytesIO
@@ -64,6 +64,19 @@ def livescores(message):
     bot.register_next_step_handler_by_chat_id(message.chat.id,
                                               lambda msg: send_data(bot, msg))
 
+@bot.message_handler(commands=["artist"])
+def artist(message):
+    bot.send_message(message.chat.id, "Send me the name of the artist", reply_markup=force_markup)
+    bot.register_next_step_handler_by_chat_id(message.chat.id,lambda msg : search(msg))
+
+def search(message):
+    uri,followers,images,name,genres = get_details_artist(message.text)
+    image = images[0]
+    genres = [item.title() for item in genres]
+    albums = get_albums(uri)
+    text = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎵Genre(s): {' ,'.join(genres)} \nAlbums:\n{','.join(albums)}"
+    # bot.send_message(message.chat.id, f"{get_details_artist(message)}")
+    bot.send_photo(message.chat.id, photo=image, caption=text)
 
 
 @bot.message_handler(commands=['topsongs'])
@@ -83,7 +96,7 @@ def topsongs(message):
         for item in replace:
             if item in artist:
                 artist = artist.replace(item, "")
-        caption = f"👤Artist #{artist}\n🎵Song : {song}\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
+        caption = f"👤Artist #{artist}\n🎵Song : {song}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
         bot.send_photo(message.chat.id,photo=image,caption=caption)
         if preview_url is not None:
             response = requests.get(preview_url)
@@ -98,15 +111,23 @@ def topsongs(message):
 
 @bot.message_handler(commands=['ig_followers_game'])
 def begin(message):
-    bot.send_message(message.chat.id, f"{logo}")
-    # with open("giphy.mp4", "rb") as file:
-    #     bot.send_document(document=file, chat_id=message.chat.id)
     bot.send_message(
         message.chat.id,
         " Please answer with '🅰' or '🅱:'. \nEnter 's's to stop the game and see your final score😉",
         reply_markup=keyboard)
     ig_game = IgFollowers()
     ig_game.ask_question(bot, message.chat.id, keyboard)
+
+@bot.message_handler(func=lambda message: True)
+def handle_text(message):
+    if message.text == "hello":
+        bot.send_message(message.chat.id, f"Hi {message.from_user.firstname}" )
+    elif message.text == "⬆️ Show command buttons":
+        bot.send_message(message.chat.id, "⬆️ Show command buttons",reply_markup=start_markup)
+    elif message.text == "⬇️ Hide command buttons":
+        bot.send_message(message.chat.id, "⬇️ Hide command buttons",reply_markup=hide_keyboard)
+ 
+
 
 print("Bot is on>>>>")
 bot.polling()

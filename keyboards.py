@@ -23,7 +23,7 @@ def create_keyboard(all_answers):
 
 
 force_markup = types.ForceReply()
-hide_markup = types.ReplyKeyboardRemove()
+# hide_markup = types.ReplyKeyboardRemove()
 start_markup = types.ReplyKeyboardMarkup(resize_keyboard=True,
                                          one_time_keyboard=False)
 start_markup.row("⬇️ Hide command buttons")

@@ -113,8 +113,20 @@ def get_track_details(track_id):
     release_date = track_info["album"]["release_date"]
     total_tracks = track_info["album"]["total_tracks"]
     track_no = track_info["track_number"]
-    # uri = track_info["uri"]
+    uri = track_info["uri"]
     preview_url = track_info["preview_url"]
 
     return preview_url, release_date, album, track_no,total_tracks
 
+def get_albums(uri):
+    # albums = []
+    results = spotify.artist_albums(uri, album_type='album')
+    albums = results['items']
+    # while results['next']:
+    #     results = spotify.next(results)
+    #     albums.extend(results['items'])
+
+    # for album in albums:
+    #     albums.append(album)
+    return albums
+# print(get_albums("spotify:artist:4dpARuHxo51G3z768sgnrY"))
