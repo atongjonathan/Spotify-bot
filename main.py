@@ -11,8 +11,8 @@ from spotify import *
 import requests,os
 from io import BytesIO
 
-# TELEGRAM_BOT_TOKEN = 
-bot = telebot.TeleBot((os.getenv('TELEGRAM_BOT_TOKEN')))
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN_2')
+bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
 
 @bot.message_handler(commands=['start'])
 def welcome(message):
@@ -74,8 +74,28 @@ def search(message):
     uri,followers,images,name,genres = get_details_artist(message.text)
     image = images[0]
     genres = [item.title() for item in genres]
-    albums = get_albums(uri)
-    text = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎵Genre(s): {' ,'.join(genres)} \nAlbums:\n{','.join(albums)}"
+    artist_albums_info = get_artist_albums(uri)
+    artist_albums = []
+    for album in enumerate(artist_albums_info):
+        artist_albums.append(album)
+    list_of_albums = []
+    for item in artist_albums:
+        dict = {
+            'index': item[0],
+            "name" : item[1]["name"],
+            "uri": item[1]["uri"]
+        }
+        list_of_albums.append(dict)
+    names = []
+    uris = []
+    for dict in list_of_albums:
+        names.append(str(dict['index']+1)+' '+str(dict['name'])+"\n")
+        uris.append(dict["uri"])
+# album_tracks = get_album_tracks(album_id)
+    # for idx, track in enumerate(album_tracks):
+    #     print(f"{idx+1}. {track['name']} (ID: {track['id']})")
+    text = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎵Genre(s): {', '.join(genres)} \n📀 Albums:\n{''.join(names)}"
+    # \nAlbums:\n{(albums)}"
     # bot.send_message(message.chat.id, f"{get_details_artist(message)}")
     bot.send_photo(message.chat.id, photo=image, caption=text)
 
@@ -128,6 +148,8 @@ def handle_text(message):
     elif message.text == "⬇️ Hide command buttons":
         bot.send_message(message.chat.id, "⬇️ Hide command buttons",reply_markup=hide_keyboard)
  
+
+# Get the list of tracks in the album
 
 
 print("Bot is on>>>>")

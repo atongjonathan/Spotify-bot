@@ -7,10 +7,9 @@ import json,os
 SPOTIPY_CLIENT_ID  = os.getenv('SPOTIPY_CLIENT_ID')
 SPOTIPY_CLIENT_SECRET  = os.getenv('SPOTIPY_CLIENT_SECRET')
 # SPOTIPY_REDIRECT_URI   = os.getenv('SPOTIPY_REDIRECT_URI' )
-
+# print(SPOTIPY_CLIENT_ID,SPOTIPY_CLIENT_SECRET)
 # # Authorization 
-spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id=SPOTIPY_CLIENT_ID,
-    client_secret=SPOTIPY_CLIENT_SECRET))
+spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
 
 # # Authorization 2
 scope = "playlist-modify-public"
@@ -32,8 +31,6 @@ def artist_top_tracks(uri, no_of_tracks):
         track_name = track['name']
         top_songs.append(track_name)
     return top_songs,results['tracks'][:no_of_tracks]
-
-
 
   
 def get_ids(dict_of_songs:dict):
@@ -64,10 +61,6 @@ def get_track_id(artist:str,track:str):
     best_song = spotify.search(q=f"{artist}, {track}", type='track')
     best_song_id = best_song["tracks"]["items"][0]["id"]
     return best_song_id
-
-
-
-
 
 
 # # Create a playlist and add tracks
@@ -119,14 +112,30 @@ def get_track_details(track_id):
     return preview_url, release_date, album, track_no,total_tracks
 
 def get_albums(uri):
-    # albums = []
+    albums = []
     results = spotify.artist_albums(uri, album_type='album')
     albums = results['items']
-    # while results['next']:
-    #     results = spotify.next(results)
-    #     albums.extend(results['items'])
-
-    # for album in albums:
-    #     albums.append(album)
     return albums
-# print(get_albums("spotify:artist:4dpARuHxo51G3z768sgnrY"))
+
+def get_album_tracks(album_id):
+    # Get album tracks information
+    album_tracks_info = sp.album_tracks(album_id)
+    
+    # Extract track information from each item
+    track_list = []
+    for track in album_tracks_info['items']:
+        track_name = track['name']
+        track_id = track['id']
+        track_list.append({'name': track_name, 'id': track_id})
+    
+    return track_list
+
+def get_artist_albums(artist_id):
+    # Get artist albums information
+    artist_albums_info = sp.artist_albums(artist_id, album_type='album')
+    
+    # Extract album names and URIs from each item
+    albums = [{'name': album['name'], 'uri': album['uri']} for album in artist_albums_info['items']]
+    
+    return albums
+# print(get_albums("spotify:artist:4dpARuHxo51G3z768sgnrY")[0]['name'])
