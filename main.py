@@ -11,7 +11,7 @@ from spotify import *
 import requests,os
 from io import BytesIO
 
-TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN_2')
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
 
 @bot.message_handler(commands=['start'])
@@ -92,8 +92,8 @@ def search(message):
         names.append(str(dict['index']+1)+' '+str(dict['name'])+"\n")
         uris.append(dict["uri"])
 # album_tracks = get_album_tracks(album_id)
-    # for idx, track in enumerate(album_tracks):
-    #     print(f"{idx+1}. {track['name']} (ID: {track['id']})")
+#     for idx, track in enumerate(album_tracks):
+#         print(f"{idx+1}. {track['name']} (ID: {track['id']})")
     text = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎵Genre(s): {', '.join(genres)} \n📀 Albums:\n{''.join(names)}"
     # \nAlbums:\n{(albums)}"
     # bot.send_message(message.chat.id, f"{get_details_artist(message)}")
