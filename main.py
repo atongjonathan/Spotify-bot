@@ -180,7 +180,7 @@ def done(message):
     for item in replace:
             if item in artist:
                 artist = artist.replace(item, "")
-    caption = f"👤Artist #{artist}\n🎵Song : {song.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
+    caption = f"👤Artist #{artist}\n🎵Song : {artist.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
     bot.send_photo(message.chat.id,photo=image,caption=caption)
     if preview_url is not None:
         response = requests.get(preview_url)
