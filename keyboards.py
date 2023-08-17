@@ -43,7 +43,6 @@ def create_album_keyboard (list_of_albums,list_of_tracks):
     return answers_keyboard
 
 force_markup = types.ForceReply()
-# hide_markup = types.ReplyKeyboardRemove()
 start_markup = types.ReplyKeyboardMarkup(resize_keyboard=True,
                                          one_time_keyboard=False)
 start_markup.row("⬇️ Hide command buttons")
