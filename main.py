@@ -164,7 +164,7 @@ def begin(message):
 
 @bot.message_handler(commands=["song"])
 def get_song(message):
-    bot.send_message(message.chat.id, "Send me the name of the song a comma then followed by artist e.g.Adelle , 30 \nIf artist is not known write comma then leave blank ",reply_markup=force_markup)
+    bot.send_message(message.chat.id, "Send me the name of the song followed by a comma then the name of the artist. Example: It ain't me , Kygo \nIf artist is not known leave blank after the comma Example: It ain't me ,",reply_markup=force_markup)
     bot.register_next_step_handler_by_chat_id(message.chat.id, lambda message:done(message))
 def done(message):
     if "," not in message.text:
