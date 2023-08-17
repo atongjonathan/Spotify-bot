@@ -170,6 +170,7 @@ def done(message):
     if "," not in message.text:
         bot.send_message(message.chat.id, "No comma found, try again")
         get_song(message)
+        return
     data_list = message.text.split(",")
     song = data_list[0]
     try:
