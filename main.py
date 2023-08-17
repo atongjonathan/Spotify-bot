@@ -172,7 +172,10 @@ def done(message):
         get_song(message)
     data_list = message.text.split(",")
     song = data_list[0]
-    artist = data_list[1]
+    try:
+        artist = data_list[1]
+    except:
+        artist = ""
     id = get_track_id(artist,song)
     artist, preview_url, release_date, album, track_no,total_tracks = get_track_details(id)
     image = get_track_image(id)
