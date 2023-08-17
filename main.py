@@ -1,6 +1,6 @@
 import telebot
 import random
-from info import quotess
+from info import quotes
 from ig_followers import IgFollowers
 from livescore import get_scores
 from top_songs import get_data
