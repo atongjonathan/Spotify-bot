@@ -188,7 +188,7 @@ def done(message):
         audio_io = BytesIO(audio_content)
         bot.send_audio(chat_id=message.chat.id, audio=audio_io, title=song, performer=artist, reply_markup=start_markup)
     else:
-        bot.send_message(message.chat.id, "Audio preview was not found")
+        bot.send_message(message.chat.id, "Audio preview was not found", reply_markup=start_markup)
 
 
 @bot.message_handler(func=lambda message: True)
