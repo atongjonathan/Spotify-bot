@@ -94,7 +94,7 @@ def search(message):
     text = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎵Genre(s): {', '.join(genres)} \n📀 Albums:\n       {'       '.join(names)}"
     list_of_tracks = []
     bot.send_photo(message.chat.id, photo=image, caption=text)
-    bot.send_message(message.chat.id, f"Do you want to get the all tracks of any of this {name} albums?",reply_markup=yes_no_keyboard)
+    bot.send_message(message.chat.id, f"Get all tracks of any of {name}'s albums?",reply_markup=yes_no_keyboard)
     bot.register_next_step_handler_by_chat_id(message.chat.id, lambda msg: check(msg,list_of_albums,list_of_tracks))
 def send_checker(message,list_of_albums,list_of_tracks):
     if len(list_of_tracks)==0:
@@ -117,7 +117,7 @@ def get_album_songs(message, list_of_albums):
         track_list.append(data)
     release_date,total_tracks,photo = get_album_cover_art(chosen_album["uri"])
     tracks =f"{'       '.join(track_list)}"
-    caption = f"📀 Album: {message.text}\n⭐️ Released: {release_date}\nTotal Tracks: {total_tracks}\nTracks:\n{tracks}"
+    caption = f"📀 Album: {message.text}\n⭐️ Released: {release_date}\nTotal Tracks: {total_tracks}\nTracks:\n       {tracks}"
     bot.send_photo(message.chat.id,photo=photo, caption=caption, reply_markup=start_markup)
 
 def send_album_tracks(message,list_of_tracks):

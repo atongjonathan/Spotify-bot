@@ -48,7 +48,7 @@ start_markup = types.ReplyKeyboardMarkup(resize_keyboard=True,
                                          one_time_keyboard=False)
 start_markup.row("⬇️ Hide command buttons")
 start_markup.row('/topsongs', '/song', '/quote')
-start_markup.row('/artist', '/ig_followers_game', '/info')
+start_markup.row('/artist', '/status', '/info')
 
 keyboard = types.ReplyKeyboardMarkup(
     row_width=2,
