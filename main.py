@@ -124,7 +124,7 @@ def send_album_tracks(message,list_of_tracks):
     bot.send_message(message.chat.id, "".join(list_of_tracks))
 @bot.message_handler(commands=['topsongs'])
 def topsongs(message):
-    no_of_songs = 5
+    no_of_songs = 10
     bot.send_chat_action(message.chat.id, "typing")
     titles, artists = get_data(no_of_songs)
     for index in range(0, no_of_songs):
