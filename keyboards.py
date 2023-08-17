@@ -1,6 +1,11 @@
 from telebot import types
 import html
 import random
+yes_no_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+yes = types.KeyboardButton("Yes")
+no = types.KeyboardButton("No")
+yes_no_keyboard.add(yes,no)
+
 
 hide_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
 hide_button = types.KeyboardButton("⬆️ Show command buttons")
@@ -21,14 +26,29 @@ def create_keyboard(all_answers):
         answers_keyboard.add(button)
     return answers_keyboard
 
+def create_album_keyboard (list_of_albums,list_of_tracks):
+    answers_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    if len(list_of_tracks)==0:
+
+        for album in list_of_albums:
+            button = types.KeyboardButton(album["name"]) 
+
+            answers_keyboard.add(button)
+    else:
+        for song in list_of_tracks:
+            button = types.KeyboardButton(song) 
+
+            answers_keyboard.add(button)        
+
+    return answers_keyboard
 
 force_markup = types.ForceReply()
 # hide_markup = types.ReplyKeyboardRemove()
 start_markup = types.ReplyKeyboardMarkup(resize_keyboard=True,
                                          one_time_keyboard=False)
 start_markup.row("⬇️ Hide command buttons")
-start_markup.row('/topsongs', '/livescores', '/quote')
-start_markup.row('/artistt', '/ig_followers_game', '/info')
+start_markup.row('/topsongs', '/song', '/quote')
+start_markup.row('/artist', '/ig_followers_game', '/info')
 
 keyboard = types.ReplyKeyboardMarkup(
     row_width=2,

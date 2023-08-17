@@ -6,8 +6,6 @@ import json,os
 
 SPOTIPY_CLIENT_ID  = os.getenv('SPOTIPY_CLIENT_ID')
 SPOTIPY_CLIENT_SECRET  = os.getenv('SPOTIPY_CLIENT_SECRET')
-# SPOTIPY_REDIRECT_URI   = os.getenv('SPOTIPY_REDIRECT_URI' )
-# print(SPOTIPY_CLIENT_ID,SPOTIPY_CLIENT_SECRET)
 # # Authorization 
 spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
 
@@ -101,7 +99,7 @@ def get_track_image(track_id):
 
 def get_track_details(track_id):
     track_info = sp.track(track_id)
-    # artist = track_info["album"]["artists"][0]["name"]
+    artist = track_info["album"]["artists"][0]["name"]
     album = track_info["album"]["name"]
     release_date = track_info["album"]["release_date"]
     total_tracks = track_info["album"]["total_tracks"]
@@ -109,7 +107,7 @@ def get_track_details(track_id):
     uri = track_info["uri"]
     preview_url = track_info["preview_url"]
 
-    return preview_url, release_date, album, track_no,total_tracks
+    return artist, preview_url, release_date, album, track_no,total_tracks
 
 def get_albums(uri):
     albums = []
@@ -138,4 +136,16 @@ def get_artist_albums(artist_id):
     albums = [{'name': album['name'], 'uri': album['uri']} for album in artist_albums_info['items']]
     
     return albums
+
+def get_album_cover_art(album_uri):
+    # Extract album ID from the URI
+    album_id = album_uri.split(':')[-1]
+    
+    # Get album information
+    album_info = sp.album(album_id)
+    release_date = album_info['release_date']
+    total_tracks = album_info['total_tracks']
+    cover_art_url = album_info['images'][0]['url']
+    
+    return release_date,total_tracks,cover_art_url
 # print(get_albums("spotify:artist:4dpARuHxo51G3z768sgnrY")[0]['name'])

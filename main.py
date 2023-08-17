@@ -1,12 +1,11 @@
 import telebot
 import random
-from info import quotes, logo
+from info import quotess
 from ig_followers import IgFollowers
 from livescore import get_scores
 from top_songs import get_data
 from telebot import util
-import html
-from keyboards import keyboard,sport,start_markup,hide_keyboard,force_markup
+from keyboards import *
 from spotify import *
 import requests,os
 from io import BytesIO
@@ -70,6 +69,7 @@ def artist(message):
     bot.send_message(message.chat.id, "Send me the name of the artist", reply_markup=force_markup)
     bot.register_next_step_handler_by_chat_id(message.chat.id,lambda msg : search(msg))
 
+# @bot.message_handler(commands=[''])
 def search(message):
     uri,followers,images,name,genres = get_details_artist(message.text)
     image = images[0]
@@ -89,17 +89,39 @@ def search(message):
     names = []
     uris = []
     for dict in list_of_albums:
-        names.append(str(dict['index']+1)+' '+str(dict['name'])+"\n")
+        names.append(str(dict['index']+1)+'. '+str(dict['name'])+"\n")
         uris.append(dict["uri"])
-# album_tracks = get_album_tracks(album_id)
-#     for idx, track in enumerate(album_tracks):
-#         print(f"{idx+1}. {track['name']} (ID: {track['id']})")
-    text = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎵Genre(s): {', '.join(genres)} \n📀 Albums:\n{''.join(names)}"
-    # \nAlbums:\n{(albums)}"
-    # bot.send_message(message.chat.id, f"{get_details_artist(message)}")
+    text = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎵Genre(s): {', '.join(genres)} \n📀 Albums:\n       {'       '.join(names)}"
+    list_of_tracks = []
     bot.send_photo(message.chat.id, photo=image, caption=text)
+    bot.send_message(message.chat.id, f"Do you want to get the all tracks of any of this {name} albums?",reply_markup=yes_no_keyboard)
+    bot.register_next_step_handler_by_chat_id(message.chat.id, lambda msg: check(msg,list_of_albums,list_of_tracks))
+def send_checker(message,list_of_albums,list_of_tracks):
+    if len(list_of_tracks)==0:
+        if message.text == "Yes":
+            bot.send_message(message.chat.id,"Awesome which album's tracks do you ant to get?", reply_markup=create_album_keyboard(list_of_albums,list_of_tracks))
+            bot.register_next_step_handler_by_chat_id(message.chat.id, lambda msg : get_album_songs(msg, list_of_albums))
+        elif message.text == "No":
+            bot.send_message(message.chat.id, "Done artist search complete",reply_markup=start_markup)
+def check(message,list_of_albums,list_of_tracks):
+    send_checker(message,list_of_albums,list_of_tracks)
 
+def get_album_songs(message, list_of_albums):
+    for album in list_of_albums:
+        if message.text == album["name"]:
+            chosen_album = album
+    album_tracks = get_album_tracks(chosen_album["uri"])
+    track_list = []
+    for idx,track in enumerate(album_tracks):
+        data = f"{idx+1}. {track['name']}"+"\n"
+        track_list.append(data)
+    release_date,total_tracks,photo = get_album_cover_art(chosen_album["uri"])
+    tracks =f"{'       '.join(track_list)}"
+    caption = f"📀 Album: {message.text}\n⭐️ Released: {release_date}\nTotal Tracks: {total_tracks}\nTracks:\n{tracks}"
+    bot.send_photo(message.chat.id,photo=photo, caption=caption, reply_markup=start_markup)
 
+def send_album_tracks(message,list_of_tracks):
+    bot.send_message(message.chat.id, "".join(list_of_tracks))
 @bot.message_handler(commands=['topsongs'])
 def topsongs(message):
     no_of_songs = 5
@@ -109,7 +131,7 @@ def topsongs(message):
         artist = artists[index]
         song = titles[index]
         id = get_track_id(artist,song)
-        preview_url, release_date, album, track_no,total_tracks = get_track_details(id)
+        artist,preview_url, release_date, album, track_no,total_tracks = get_track_details(id)
         # song_id = search_song_id(artist,song)
         # preview_url = get_preview_url(song_id)
         image = get_track_image(id)
@@ -123,7 +145,7 @@ def topsongs(message):
             response = requests.get(preview_url)
             audio_content = response.content
             audio_io = BytesIO(audio_content)
-            bot.send_audio(chat_id=message.chat.id, audio=audio_io, title=f'{artist} - {song}', performer=artist)
+            bot.send_audio(chat_id=message.chat.id, audio=audio_io, title=f'{song}', performer=artist,reply_markup=start_markup)
         else:
             bot.send_message(message.chat.id, "Audio preview was not found")
         # time.sleep(1.5)
@@ -139,6 +161,33 @@ def begin(message):
     ig_game = IgFollowers()
     ig_game.ask_question(bot, message.chat.id, keyboard)
 
+
+@bot.message_handler(commands=["song"])
+def get_song(message):
+    bot.send_message(message.chat.id, "Send me the name of the song a comma then followed by artist e.g.Adelle , 30 \nIf artist is not known write comma then leave blank ",reply_markup=force_markup)
+    bot.register_next_step_handler_by_chat_id(message.chat.id, lambda message:done(message))
+def done(message):
+    data_list = message.text.split(",")
+    song = data_list[0]
+    artist = data_list[1]
+    id = get_track_id(artist,song)
+    artist, preview_url, release_date, album, track_no,total_tracks = get_track_details(id)
+    image = get_track_image(id)
+    replace = [","," ", "&", ".", "Featuring"]
+    for item in replace:
+            if item in artist:
+                artist = artist.replace(item, "")
+    caption = f"👤Artist #{artist}\n🎵Song : {song.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
+    bot.send_photo(message.chat.id,photo=image,caption=caption)
+    if preview_url is not None:
+        response = requests.get(preview_url)
+        audio_content = response.content
+        audio_io = BytesIO(audio_content)
+        bot.send_audio(chat_id=message.chat.id, audio=audio_io, title=song, performer=artist, reply_markup=start_markup)
+    else:
+        bot.send_message(message.chat.id, "Audio preview was not found")
+
+
 @bot.message_handler(func=lambda message: True)
 def handle_text(message):
     if message.text == "hello":
@@ -149,7 +198,7 @@ def handle_text(message):
         bot.send_message(message.chat.id, "⬇️ Hide command buttons",reply_markup=hide_keyboard)
  
 
-# Get the list of tracks in the album
+
 
 
 print("Bot is on>>>>")
