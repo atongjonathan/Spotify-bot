@@ -69,7 +69,6 @@ def artist(message):
     bot.send_message(message.chat.id, "Send me the name of the artist", reply_markup=force_markup)
     bot.register_next_step_handler_by_chat_id(message.chat.id,lambda msg : search(msg))
 
-# @bot.message_handler(commands=[''])
 def search(message):
     uri,followers,images,name,genres = get_details_artist(message.text)
     image = images[0]
