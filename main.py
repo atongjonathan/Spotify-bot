@@ -168,7 +168,7 @@ def get_song(message):
     bot.register_next_step_handler_by_chat_id(message.chat.id, lambda message:done(message))
 def done(message):
     if "," not in message.text:
-        bot.send_message("No comma found, try again")
+        bot.send_message(message.chat.id, "No comma found, try again")
         get_song(message)
     data_list = message.text.split(",")
     song = data_list[0]
