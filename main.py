@@ -99,7 +99,7 @@ def search(message):
 def send_checker(message,list_of_albums,list_of_tracks):
     if len(list_of_tracks)==0:
         if message.text == "Yes":
-            bot.send_message(message.chat.id,"Awesome which album's tracks do you ant to get?", reply_markup=create_album_keyboard(list_of_albums,list_of_tracks))
+            bot.send_message(message.chat.id,"Awesome which album's tracks do you want to get?", reply_markup=create_album_keyboard(list_of_albums,list_of_tracks))
             bot.register_next_step_handler_by_chat_id(message.chat.id, lambda msg : get_album_songs(msg, list_of_albums))
         elif message.text == "No":
             bot.send_message(message.chat.id, "Done artist search complete",reply_markup=start_markup)
