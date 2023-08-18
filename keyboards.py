@@ -1,5 +1,6 @@
 from telebot import types
 import random
+import html
 yes_no_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
 yes = types.KeyboardButton("Yes")
 no = types.KeyboardButton("No")

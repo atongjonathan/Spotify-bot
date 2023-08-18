@@ -12,18 +12,16 @@ spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
 # # Authorization 2
 scope = "playlist-modify-public"
 
-sp_oauth = SpotifyOAuth(scope=scope,
-                        client_id= SPOTIPY_CLIENT_ID,
-                        client_secret=SPOTIPY_CLIENT_SECRET,
-                        redirect_uri="http://example.com")
-token_info = sp_oauth.get_access_token(as_dict=True)
-access_token = token_info.get('access_token')
-refresh_token = token_info.get('refresh_token')
-
-sp = spotipy.Spotify(auth=access_token)
-# Use the new access token to authenticate your API requests
-sp = spotipy.Spotify(auth=access_token)
-
+sp = spotipy.Spotify(
+    auth_manager=SpotifyOAuth(
+        scope="playlist-modify-private",
+        redirect_uri="http://example.com",
+        client_id=SPOTIPY_CLIENT_ID,
+        client_secret= SPOTIPY_CLIENT_SECRET,
+        show_dialog=True,
+        cache_path="token.txt"
+    )
+)
 no_of_songs = 5
 
 top_songs = []
