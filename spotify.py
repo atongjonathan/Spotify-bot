@@ -151,3 +151,25 @@ def get_album_cover_art(album_uri):
     
     return release_date,total_tracks,cover_art_url
 # print(get_albums("spotify:artist:4dpARuHxo51G3z768sgnrY")[0]['name'])
+
+def get_top_tracks(uri):
+    top_tracks_data = artist_top_tracks(uri, 10)
+    titles_list = top_tracks_data[0]
+    track_details = []
+    tracks_data = top_tracks_data[1]
+    for track in tracks_data:
+        uri = track["uri"]
+        artist, preview_url, release_date, album, track_no,total_tracks = get_track_details(uri)
+        dict = {
+            "name":track["name"],
+            "preview_url": preview_url,
+            "image": get_track_image(uri),
+            "release_date": release_date,
+            "album": album,
+            'track_no':track_no,
+            "total_tracks":total_tracks
+        }
+        track_details.append(dict)
+    return track_details
+
+# print(get_top_tracks("spotify:artist:4dpARuHxo51G3z768sgnrY"))
