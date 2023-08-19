@@ -92,7 +92,7 @@ def search(message):
         uris.append(dict["uri"])
     text = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎵Genre(s): {', '.join(genres)} \n📀 Albums:\n       {'       '.join(names)}"
     list_of_tracks = []
-    bot.send_photo(message.chat.id, photo=image, caption=text)
+    bot.send_photo(message.chat.id, photo=image, caption=text, reply_markup=start_markup)
     if len(list_of_albums)==0:
         return 
     bot.send_message(message.chat.id, f"Get all tracks of any of {name}'s albums?",reply_markup=yes_no_keyboard)
