@@ -164,7 +164,6 @@ def get_top_tracks(id,uri):
         }
         track_details.append(dict)
         caption = f"👤 Artist : {artist}\n🎵 Song : {name}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢 Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
-        bot.send_photo(id,photo=image,caption=caption)
         if preview_url is not None:
             response = requests.get(preview_url)
             audio_content = response.content
@@ -173,7 +172,7 @@ def get_top_tracks(id,uri):
         else:
             uri_parts = uri.split(":")
             track_id = uri_parts[-1]
-            bot.send_message(id, f"{base_url}{track_id}")            
+            bot.send_message(chat_id=id,text=f"{caption}\n{base_url}{track_id}")            
     bot.send_message(id, f"Those are {artist}'s top 🔝 {no_of_songs} top tracks 💪!",reply_markup=start_markup)
 
 
