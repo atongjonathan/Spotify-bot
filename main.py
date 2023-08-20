@@ -123,23 +123,22 @@ def get_album_songs(msg, list_of_albums):
             album_name = album["name"]
             chosen_album = album
     release_date,total_tracks,photo = get_album_cover_art(chosen_album["uri"])
-    caption = f"📀 Album: {album_name}\n⭐️ Released: {release_date}\nTotal Tracks: {total_tracks}"
+    caption = f"📀 Album: {album_name}\n⭐️ Released: {release_date}\n🔢 Total Tracks: {total_tracks}"
     bot.send_photo(chat_id,photo=photo, caption=caption, reply_markup=start_markup)
     album_tracks = get_album_tracks(chosen_album["uri"])
     for track in album_tracks:
         name = track['name']
         id = track['id']
         artist, preview_url, release_date, album, track_no,total_tracks = get_track_details(id)
-        caption = f"👤Artist: {artist}\n🔢Track : {track_no} of {total_tracks}\n🎵Song : {name}\n"
-        bot.send_message(msg.chat.id,text=caption)
+        caption = f"👤Artist: {artist}\n🔢Track : {track_no} of {total_tracks}\n🎵Song : {name}\n"        
         if preview_url is not None:
             response = requests.get(preview_url)
             audio_content = response.content
             audio_io = BytesIO(audio_content)
-            time.sleep(1)
+            bot.send_message(msg.chat.id,text=caption)
             bot.send_audio(chat_id=msg.chat.id, audio=audio_io, title=f'{name}', performer=artist,reply_markup=start_markup)
         else:
-            bot.send_message(msg.chat.id, f"{base_url}{id}")
+            bot.send_message(msg.chat.id, text=f"{caption}\n{base_url}{id}")
 
     bot.send_message(msg.chat.id, f"Those are all the {total_tracks} tracks in {artist}'s {album_name} album 💪!",reply_markup=start_markup)
 
@@ -228,15 +227,14 @@ def done(message):
     artist, preview_url, release_date, album, track_no,total_tracks = get_track_details(id)
     image = get_track_image(id)
     caption = f"👤Artist: {artist}\n🎵Song : {song.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
-    bot.send_photo(message.chat.id,photo=image,caption=caption, reply_markup=start_markup)
     if preview_url is not None:
+        bot.send_photo(message.chat.id,photo=image,caption=caption, reply_markup=start_markup)
         response = requests.get(preview_url)
         audio_content = response.content
         audio_io = BytesIO(audio_content)
         bot.send_audio(chat_id=message.chat.id, audio=audio_io, title=song, performer=artist, reply_markup=start_markup)
     else:
-        bot.send_message(message.chat.id, f"{base_url}{id}")
-        
+        bot.send_message(message.chat.id, text=f"{caption}\n{base_url}{id}")        
 
 
 @bot.message_handler(func=lambda message: True)
