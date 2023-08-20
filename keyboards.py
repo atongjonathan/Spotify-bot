@@ -6,11 +6,14 @@ yes = types.KeyboardButton("Yes")
 no = types.KeyboardButton("No")
 yes_no_keyboard.add(yes,no)
 
-def get_handler_of_artist(name):
+def get_handler_of_artist(name,list):
     handler_markup = types.InlineKeyboardMarkup()
-    top_tracks_button = types.InlineKeyboardButton(f"{name.title()}'s Top Tracks",callback_data=f'track_{name}')
-    album_list_button = types.InlineKeyboardButton("Albums Dicography", callback_data=f'album_{name}')
-    handler_markup.row(top_tracks_button,album_list_button)
+    top_tracks_button = types.InlineKeyboardButton(f"{name.title()}'s Top Tracks🔝",callback_data=f'track_{name}')
+    if len(list)>0:
+        album_list_button = types.InlineKeyboardButton("View Album🧐", callback_data=f'album_{name}')
+        handler_markup.row(top_tracks_button,album_list_button)
+    else:
+        handler_markup.row(top_tracks_button)
     return handler_markup
 
 hide_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -36,7 +39,6 @@ def create_album_keyboard (list_of_albums):
     answers_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for album in list_of_albums:
         button = types.KeyboardButton(album["name"]) 
-
         answers_keyboard.add(button)
     return answers_keyboard
 
