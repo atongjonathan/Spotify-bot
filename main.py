@@ -11,7 +11,7 @@ import requests,os
 from io import BytesIO
 
 
-TELEGRAM_BOT_TOKEN = os.getenv('artist_strip')
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
 current_artist = ''
 @bot.message_handler(commands=['start'])
