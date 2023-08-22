@@ -14,6 +14,7 @@ import time
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
 base_url = "https://open.spotify.com/track/"
+
 @bot.message_handler(commands=['start'])
 def welcome(message):
     bot.send_message(message.chat.id ,f"Hello {message.from_user.first_name}, Welcome to SG✨'s bot😅!", reply_markup=start_markup)
@@ -42,28 +43,6 @@ def quote(message):
     bot.reply_to(message, f"{(today_quote)}")
 
 
-def send_data(tg_bot, msg):
-    tg_bot.send_chat_action(msg.chat.id, "typing")
-    message = msg.text.lower()
-    file = get_scores(message)
-    text = ''.join(file)
-    try:
-        tg_bot.send_message(msg.chat.id,
-                            f"{text}\nSource: https://www.livescore.cz", reply_markup=start_markup)
-        tg_bot.send_message(msg.chat.id, "Refresh: /livescores")
-    except:
-        splitted_text = util.smart_split(text, chars_per_string=3000)
-        for text in splitted_text:
-            tg_bot.send_message(msg.chat.id, text)
-        tg_bot.send_message(msg.chat.id, "Refresh: /livescores", reply_markup=start_markup)
-
-
-@bot.message_handler(commands=['livescores'])
-def livescores(message):
-    bot.send_message(message.chat.id, "Choose a sport", reply_markup=sport)
-
-    bot.register_next_step_handler_by_chat_id(message.chat.id,
-                                              lambda msg: send_data(bot, msg))
 
 @bot.message_handler(commands=["artist"])
 def artist(message):
@@ -199,15 +178,6 @@ def topsongs(message):
     bot.send_message(message.chat.id, f"Those are the top 🔝 {no_of_songs} biggest hits of this week 💪!",reply_markup=start_markup)
 
 
-@bot.message_handler(commands=['ig_followers_game'])
-def begin(message):
-    bot.send_message(
-        message.chat.id,
-        " Please answer with '🅰' or '🅱:'. \nEnter 's's to stop the game and see your final score😉",
-        reply_markup=keyboard)
-    ig_game = IgFollowers()
-    ig_game.ask_question(bot, message.chat.id, keyboard)
-
 
 @bot.message_handler(commands=["song"])
 def get_song(message):
@@ -234,7 +204,7 @@ def done(message):
         audio_io = BytesIO(audio_content)
         bot.send_audio(chat_id=message.chat.id, audio=audio_io, title=song, performer=artist, reply_markup=start_markup)
     else:
-        bot.send_message(message.chat.id, text=f"{caption}\n{base_url}{id}")        
+        bot.send_message(message.chat.id, text=f"{caption}\n{base_url}{id}", reply_markup=start_markup)        
 
 
 @bot.message_handler(func=lambda message: True)
