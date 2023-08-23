@@ -6,11 +6,11 @@ yes = types.KeyboardButton("Yes")
 no = types.KeyboardButton("No")
 yes_no_keyboard.add(yes,no)
 
-def get_handler_of_artist(name,list):
+def get_handler_of_artist(name,uri,list_of_albums):
     handler_markup = types.InlineKeyboardMarkup()
-    top_tracks_button = types.InlineKeyboardButton(f"{name.title()}'s Top Tracks🔝",callback_data=f'track_{name}')
-    if len(list)>0:
-        album_list_button = types.InlineKeyboardButton("View Album🧐", callback_data=f'album_{name}')
+    top_tracks_button = types.InlineKeyboardButton(f"{name.title()}'s Top Tracks🔝",callback_data=f"track_{uri}")
+    if len(list_of_albums)>0:
+        album_list_button = types.InlineKeyboardButton("View Album🧐", callback_data=f'album_{uri}')
         handler_markup.row(top_tracks_button,album_list_button)
     else:
         handler_markup.row(top_tracks_button)

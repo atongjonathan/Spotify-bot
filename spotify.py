@@ -132,12 +132,23 @@ def get_album_tracks(album_id):
 
 def get_artist_albums(artist_id):
     # Get artist albums information
-    artist_albums_info = sp.artist_albums(artist_id, album_type='album')
+    artist_albums_information = sp.artist_albums(artist_id, album_type='album')
+    
     
     # Extract album names and URIs from each item
-    albums = [{'name': album['name'], 'uri': album['uri']} for album in artist_albums_info['items']]
-    
-    return albums
+    artist_albums_info = [{'name': album['name'], 'uri': album['uri']} for album in artist_albums_information['items']]
+    artist_albums = []
+    for album in enumerate(artist_albums_info):
+        artist_albums.append(album)
+    list_of_albums = []
+    for item in artist_albums:
+        dict = {
+            'index': item[0],
+            "name" : item[1]["name"],
+            "uri": item[1]["uri"]
+        }
+        list_of_albums.append(dict)
+    return list_of_albums
 
 def get_album_cover_art(album_uri):
     # Extract album ID from the URI
@@ -161,6 +172,7 @@ def get_top_tracks(uri):
         uri = track["uri"]
         artist, preview_url, release_date, album, track_no,total_tracks = get_track_details(uri)
         dict = {
+            "artist":artist,
             "name":track["name"],
             "preview_url": preview_url,
             "image": get_track_image(uri),
