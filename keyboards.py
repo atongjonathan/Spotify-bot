@@ -3,10 +3,11 @@ import random
 import html
 
 
-def create_album_keyboard (list_of_albums):
-    answers_keyboard = types.InlineKeyboardMarkup(resize_keyboard=True)
+def create_album_keyboard (uri, list_of_albums):
+    answers_keyboard = types.InlineKeyboardMarkup()
     for album in list_of_albums:
-        button = types.InlineKeyboardButton(album["name"]) 
+        album = album["name"]
+        button = types.InlineKeyboardButton(album, callback_data=f'{album}_{uri}') 
         answers_keyboard.add(button)
     return answers_keyboard
 def get_handler_of_artist(name,uri,list_of_albums):
