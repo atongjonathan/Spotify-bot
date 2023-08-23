@@ -1,15 +1,12 @@
 import telebot
 import random
 from info import quotes
-from ig_followers import IgFollowers
-from livescore import get_scores
 from top_songs import get_data
-from telebot import util
 from keyboards import *
 from spotify import *
 import requests,os
 from io import BytesIO
-import time
+from datetime import datetime
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
@@ -18,13 +15,6 @@ base_url = "https://open.spotify.com/track/"
 @bot.message_handler(commands=['start'])
 def welcome(message):
     bot.send_message(message.chat.id ,f"Hello {message.from_user.first_name}, Welcome to SG✨'s bot😅!", reply_markup=start_markup)
-
-@bot.message_handler(commands=['help'])
-def help(message):
-    bot.reply_to(
-        message,
-        "Here are some available commands for now: /start, /commands, /quote, /ig_followers_game, /help, /info, /status"
-    )
 
 
 @bot.message_handler(commands=['info'])
@@ -51,10 +41,6 @@ def artist(message):
     bot.send_message(message.chat.id, "Send me the name of the artist", reply_markup=force_markup)
     bot.register_next_step_handler_by_chat_id(message.chat.id,lambda msg : search(msg))
 
-
-
-
-    pass
 def search(message):
     uri,followers,images,name,genres = get_details_artist(message.text)
     global uri_ar
@@ -146,6 +132,7 @@ def get_top_tracks(id,uri):
             response = requests.get(preview_url)
             audio_content = response.content
             audio_io = BytesIO(audio_content)
+            bot.send_photo(chat_id=id,photo=image,caption=caption, reply_markup=start_markup)
             bot.send_audio(chat_id=id, audio=audio_io, title=f'{name}', performer=artist,reply_markup=start_markup)
         else:
             uri_parts = uri.split(":")
@@ -198,10 +185,10 @@ def done(message):
     image = get_track_image(id)
     caption = f"👤Artist: {artist}\n🎵Song : {song.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
     if preview_url is not None:
-        bot.send_photo(message.chat.id,photo=image,caption=caption, reply_markup=start_markup)
         response = requests.get(preview_url)
         audio_content = response.content
         audio_io = BytesIO(audio_content)
+        bot.send_photo(message.chat.id,photo=image,caption=caption, reply_markup=start_markup)
         bot.send_audio(chat_id=message.chat.id, audio=audio_io, title=song, performer=artist, reply_markup=start_markup)
     else:
         bot.send_message(message.chat.id, text=f"{caption}\n{base_url}{id}", reply_markup=start_markup)        
@@ -225,5 +212,5 @@ print("Bot is on>>>>")
 try:
     bot.polling()
 except Exception as e:
-    print(e)
+    print(e,f'\n{datetime.now().strftime("%d-%m-%Y at %%H:%M")}')
     bot.polling()
