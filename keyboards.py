@@ -1,11 +1,14 @@
 from telebot import types
 import random
 import html
-yes_no_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-yes = types.KeyboardButton("Yes")
-no = types.KeyboardButton("No")
-yes_no_keyboard.add(yes,no)
 
+
+def create_album_keyboard (list_of_albums):
+    answers_keyboard = types.InlineKeyboardMarkup(resize_keyboard=True)
+    for album in list_of_albums:
+        button = types.InlineKeyboardButton(album["name"]) 
+        answers_keyboard.add(button)
+    return answers_keyboard
 def get_handler_of_artist(name,uri,list_of_albums):
     handler_markup = types.InlineKeyboardMarkup()
     top_tracks_button = types.InlineKeyboardButton(f"{name.title()}'s Top Tracks🔝",callback_data=f"track_{uri}")
@@ -15,6 +18,13 @@ def get_handler_of_artist(name,uri,list_of_albums):
     else:
         handler_markup.row(top_tracks_button)
     return handler_markup
+def create_keyboard(all_answers):
+    answers_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    random.shuffle(all_answers)
+    for answer in all_answers:
+        button = types.KeyboardButton(html.unescape(answer))
+        answers_keyboard.add(button)
+    return answers_keyboard
 
 hide_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
 hide_button = types.KeyboardButton("⬆️ Show command buttons")
@@ -27,20 +37,11 @@ hard = types.KeyboardButton("Hard")
 difficulty_keyboard.add(easy, medium, hard)
 
 
-def create_keyboard(all_answers):
-    answers_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    random.shuffle(all_answers)
-    for answer in all_answers:
-        button = types.KeyboardButton(html.unescape(answer))
-        answers_keyboard.add(button)
-    return answers_keyboard
+yes_no_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+yes = types.KeyboardButton("Yes")
+no = types.KeyboardButton("No")
+yes_no_keyboard.add(yes,no)
 
-def create_album_keyboard (list_of_albums):
-    answers_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    for album in list_of_albums:
-        button = types.KeyboardButton(album["name"]) 
-        answers_keyboard.add(button)
-    return answers_keyboard
 
 force_markup = types.ForceReply()
 start_markup = types.ReplyKeyboardMarkup(resize_keyboard=True,
