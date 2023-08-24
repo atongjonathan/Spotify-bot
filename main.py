@@ -43,7 +43,7 @@ def get_album_songs(uri, call, list_of_albums):
     for album in list_of_albums:
           print(f">>{album['uri'}")
     return
-        if uri == album["uri"]:
+    if uri == album["uri"]:
             album_name = album["name"]
             chosen_album = album
     release_date, total_tracks, photo = get_album_cover_art(chosen_album["uri"])
