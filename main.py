@@ -38,9 +38,9 @@ def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_
         bot.send_message(chat_id, text=f"{caption}\n{base_url}{id}")
 
 
-def get_album_songs(uri, msg, list_of_albums):
+def get_album_songs(uri, call, list_of_albums):
     for album in list_of_albums:
-        if msg.text == album["name"]:
+        if uri == album["uri"]:
             album_name = album["name"]
             chosen_album = album
     release_date, total_tracks, photo = get_album_cover_art(chosen_album["uri"])
@@ -51,7 +51,7 @@ def get_album_songs(uri, msg, list_of_albums):
         id = track['id']
         artist, preview_url, release_date, album, track_no, total_tracks = get_track_details(id)
         caption = f"👤Artist: {artist}\n🔢Track : {track_no} of {total_tracks}\n🎵Song : {name}\n"
-        send_audios_or_previews(preview_url, photo, caption, name, id, artist, msg.chat.id)
+        send_audios_or_previews(preview_url, photo, caption, name, id, artist, call.message.chat.id)
 
     bot.send_message(msg.chat.id, f"Those are all the {total_tracks} tracks in {artist}'s {album_name} album 💪!",
                      reply_markup=start_markup)
@@ -181,7 +181,7 @@ def handle_query(call):
     elif call.data.startswith("track_"):
         get_top_tracks(call.message.chat.id, uri)
     else:
-        get_album_songs(call.data,get_album_songs(uri, call.data, get_artist_albums(uri)))
+        get_album_songs(call.data,get_album_songs(uri, call, get_artist_albums(uri)))
 
 
 print("Bot is on>>>>")
