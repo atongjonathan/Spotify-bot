@@ -181,7 +181,7 @@ def handle_query(call):
     elif call.data.startswith("track_"):
         get_top_tracks(call.message.chat.id, uri)
     else:
-        get_album_songs(call.data,get_album_songs(call.data, get_artist_albums(uri)))
+        get_album_songs(call.data,get_album_songs(uri, call.data, get_artist_albums(uri)))
 
 
 print("Bot is on>>>>")
