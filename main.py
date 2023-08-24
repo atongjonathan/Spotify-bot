@@ -28,6 +28,8 @@ def retry_func(func):
 @retry_func
 def search(message):
     uri, followers, images, name, genres = get_details_artist(message.text)
+    global uri_global
+    uri_global = uri
     image = images[0]
     genres = [item.title() for item in genres]
     list_of_albums = get_artist_albums(uri)
@@ -65,12 +67,12 @@ def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_
         bot.send_photo(chat_id, photo=image, caption=caption, reply_markup=start_markup)
         bot.send_audio(chat_id, audio=audio_io, title=f'{name}', performer=artist, reply_markup=start_markup)
     else:
-        bot.send_message(chat_id=id, text=f"{caption}\n{base_url}{id}")
+        bot.send_message(chat_id, text=f"{caption}\n{base_url}{id}")
 
 
 def get_album_songs(call_data,chat_id, list_of_albums):
     for album in list_of_albums:
-        if call_data.split('_')[0] == album["name"]:
+        if call_data == album["uri"]:
             album_name = album["name"]
             chosen_album = album
     release_date, total_tracks, photo = get_album_cover_art(chosen_album["uri"])
@@ -114,8 +116,8 @@ def get_top_tracks(chat_id, uri):
 
 
 
-def send_checker(uri, id, list_of_albums):
-    bot.send_message(id, "Awesome which album's tracks do you want to get?",
+def send_checker(uri, chat_id, list_of_albums):
+    bot.send_message(chat_id, "Awesome which album's tracks do you want to get?",
                      reply_markup=create_album_keyboard(uri, list_of_albums))
 
 
@@ -192,18 +194,19 @@ def handle_text(message):
 def handle_query(call):
     if call.data.startswith('album_'):
         uri = call.data.split('_')[1]
-        send_checker(uri, call.message.chat.id, get_artist_albums(uri))
+        chat_id = call.message.chat.id
+        send_checker(uri, chat_id, get_artist_albums(uri))
     elif call.data.startswith("track_"):
         uri = call.data.split('_')[1]
         get_top_tracks(call.message.chat.id, uri)
     else:
-        uri = call.data.split('_')[1]
-        get_album_songs(call.data, call.message.chat.id, get_artist_albums(uri))
+        # uri = call.data.split(":")[2]
+        get_album_songs(call.data, call.message.chat.id, get_artist_albums(uri_global))
 
 
 print("Bot is on>>>>")
-try:
-    bot.polling()
-except Exception as e:
-    print(e, f'\n{datetime.now().strftime("%d-%m-%Y at %H:%M")}')
-    bot.polling()
+# try:
+#     bot.polling()
+# except Exception as e:
+#     print(e, f'\n{datetime.now().strftime("%d-%m-%Y at %H:%M")}')
+bot.polling()
