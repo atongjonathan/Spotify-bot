@@ -175,14 +175,12 @@ def handle_text(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_query(call):
+    uri = call.data.split('_')[1]
     if call.data.startswith('album_'):
-        uri = call.data.split('_')[1]
         send_checker(uri, call.message.chat.id, get_artist_albums(uri))
     elif call.data.startswith("track_"):
-        uri = call.data.split('_')[1]
         get_top_tracks(call.message.chat.id, uri)
     else:
-        uri = call.data.split('_')[2]
         get_album_songs(call.data,get_album_songs(call.data, get_artist_albums(uri)))
 
 
@@ -191,3 +189,4 @@ try:
     bot.polling()
 except Exception as e:
     print(e, f'\n{datetime.now().strftime("%d-%m-%Y at %H:%M")}')
+    bot.polling()
