@@ -182,6 +182,7 @@ def handle_query(call):
         uri = call.data.split('_')[1]
         get_top_tracks(call.message.chat.id, uri)
     else:
+        uri = call.data.split('_')[2]
         get_album_songs(call.data,get_album_songs(call.data, get_artist_albums(uri)))
 
 
