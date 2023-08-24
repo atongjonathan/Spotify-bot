@@ -12,35 +12,6 @@ TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
 base_url = "https://open.spotify.com/track/"
 
-
-@bot.message_handler(commands=['start'])
-def welcome(message):
-    bot.send_message(message.chat.id, f"Hello {message.from_user.first_name}, Welcome to SG✨'s bot😅!",
-                     reply_markup=start_markup)
-
-
-@bot.message_handler(commands=['info'])
-def info(message):
-    bot.reply_to(message, "Developer: @JonaAtong™.")
-
-
-@bot.message_handler(commands=['status'])
-def status(message):
-    bot.reply_to(message, "I am awake😏.")
-
-
-@bot.message_handler(commands=['quote'])
-def quote(message):
-    today_quote = random.choice(quotes)
-    bot.reply_to(message, f"{(today_quote)}")
-
-
-@bot.message_handler(commands=["artist"])
-def artist(message):
-    bot.send_message(message.chat.id, "Send me the name of the artist", reply_markup=force_markup)
-    bot.register_next_step_handler_by_chat_id(message.chat.id, lambda msg: search(msg))
-
-
 def search(message):
     uri, followers, images, name, genres = get_details_artist(message.text)
     image = images[0]
@@ -56,23 +27,18 @@ def search(message):
     list_of_tracks = []
     bot.send_photo(message.chat.id, photo=image, caption=text, reply_markup=handler)
 
-
-@bot.callback_query_handler(func=lambda call: True)
-def handle_query(call):
-    uri = call.data.split('_')[1]
-    if call.data.startswith('album_'):
-        send_checker(call.message.chat.id, get_artist_albums(uri))
-    elif call.data.startswith("track_"):
-        get_top_tracks(call.message.chat.id, uri)
-
-
-def send_checker(id, list_of_albums):
-    bot.send_message(id, "Awesome which album's tracks do you want to get?",
-                     reply_markup=create_album_keyboard(list_of_albums))
-    bot.register_next_step_handler_by_chat_id(id, lambda msg: get_album_songs(msg, list_of_albums))
+def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_id):
+    if preview_url is not None:
+        response = requests.get(preview_url)
+        audio_content = response.content
+        audio_io = BytesIO(audio_content)
+        bot.send_photo(chat_id, photo=image, caption=caption, reply_markup=start_markup)
+        bot.send_audio(chat_id, audio=audio_io, title=f'{name}', performer=artist, reply_markup=start_markup)
+    else:
+        bot.send_message(chat_id=id, text=f"{caption}\n{base_url}{id}")
 
 
-def get_album_songs(msg, list_of_albums):
+def get_album_songs(uri, msg, list_of_albums):
     for album in list_of_albums:
         if msg.text == album["name"]:
             album_name = album["name"]
@@ -85,7 +51,7 @@ def get_album_songs(msg, list_of_albums):
         id = track['id']
         artist, preview_url, release_date, album, track_no, total_tracks = get_track_details(id)
         caption = f"👤Artist: {artist}\n🔢Track : {track_no} of {total_tracks}\n🎵Song : {name}\n"
-        send_audios_or_previews(preview_url, photo, caption, name, id, artist, id)
+        send_audios_or_previews(preview_url, photo, caption, name, id, artist, msg.chat.id)
 
     bot.send_message(msg.chat.id, f"Those are all the {total_tracks} tracks in {artist}'s {album_name} album 💪!",
                      reply_markup=start_markup)
@@ -117,15 +83,43 @@ def get_top_tracks(chat_id, uri):
     bot.send_message(chat_id, f"Those are {artist}'s top 🔝 {no_of_songs} top tracks 💪!", reply_markup=start_markup)
 
 
-def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_id):
-    if preview_url is not None:
-        response = requests.get(preview_url)
-        audio_content = response.content
-        audio_io = BytesIO(audio_content)
-        bot.send_photo(chat_id, photo=image, caption=caption, reply_markup=start_markup)
-        bot.send_audio(chat_id, audio=audio_io, title=f'{name}', performer=artist, reply_markup=start_markup)
-    else:
-        bot.send_message(chat_id=id, text=f"{caption}\n{base_url}{id}")
+
+
+def send_checker(uri, id, list_of_albums):
+    bot.send_message(id, "Awesome which album's tracks do you want to get?",
+                     reply_markup=create_album_keyboard(uri, list_of_albums))
+    bot.register_next_step_handler_by_chat_id(id, lambda msg: get_album_songs(msg, list_of_albums))
+@bot.message_handler(commands=['start'])
+
+def welcome(message):
+    bot.send_message(message.chat.id, f"Hello {message.from_user.first_name}, Welcome to SG✨'s bot😅!",
+                     reply_markup=start_markup)
+
+
+@bot.message_handler(commands=['info'])
+def info(message):
+    bot.reply_to(message, "Developer: @JonaAtong™.")
+
+
+@bot.message_handler(commands=['status'])
+def status(message):
+    bot.reply_to(message, "I am awake😏.")
+
+
+@bot.message_handler(commands=['quote'])
+def quote(message):
+    today_quote = random.choice(quotes)
+    bot.reply_to(message, f"{(today_quote)}")
+
+
+@bot.message_handler(commands=["artist"])
+def artist(message):
+    bot.send_message(message.chat.id, "Send me the name of the artist", reply_markup=force_markup)
+    bot.register_next_step_handler_by_chat_id(message.chat.id, lambda msg: search(msg))
+
+
+
+
 
 
 @bot.message_handler(commands=['topsongs'])
@@ -179,10 +173,20 @@ def handle_text(message):
     elif message.text == "⬇️ Hide command buttons":
         bot.send_message(message.chat.id, "⬇️ Hide command buttons", reply_markup=hide_keyboard)
 
+@bot.callback_query_handler(func=lambda call: True)
+def handle_query(call):
+    if call.data.startswith('album_'):
+        uri = call.data.split('_')[1]
+        send_checker(uri, call.message.chat.id, get_artist_albums(uri))
+    elif call.data.startswith("track_"):
+        uri = call.data.split('_')[1]
+        get_top_tracks(call.message.chat.id, uri)
+    else:
+        get_album_songs(call.data,get_album_songs(call.data, get_artist_albums(uri)))
+
 
 print("Bot is on>>>>")
 try:
     bot.polling()
 except Exception as e:
     print(e, f'\n{datetime.now().strftime("%d-%m-%Y at %H:%M")}')
-    bot.polling()
