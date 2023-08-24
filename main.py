@@ -41,7 +41,7 @@ def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_
 def get_album_songs(uri, call, list_of_albums):
     print("uri")
     for album in list_of_albums:
-          print(f">>{album['uri'}")
+          print(f">>{album['uri']}")
     return
     if uri == album["uri"]:
             album_name = album["name"]
