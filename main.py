@@ -35,7 +35,7 @@ def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_
         bot.send_photo(chat_id, photo=image, caption=caption, reply_markup=start_markup)
         bot.send_audio(chat_id, audio=audio_io, title=f'{name}', performer=artist, reply_markup=start_markup)
     else:
-        bot.send_message(chat_id=id, text=f"{caption}\n{base_url}{id}")
+        bot.send_message(chat_id, text=f"{caption}\n{base_url}{id}")
 
 
 def get_album_songs(uri, msg, list_of_albums):
