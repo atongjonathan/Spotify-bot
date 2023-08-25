@@ -24,7 +24,3 @@ Before you start using the bot, make sure you have the following:
 
 1. Clone this repository:
 
-   ```bash
-   git clone https://github.com/your-username/sg-music-bot.git
-   cd sg-music-bot
-
