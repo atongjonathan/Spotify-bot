@@ -11,7 +11,7 @@ from datetime import datetime
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
 base_url = "https://open.spotify.com/track/"
-MAX_RETRIES = 3
+MAX_RETRIES = 5
 def retry_func(func):
     def wrapper(*args, **kwargs):
         retries = 0
@@ -19,9 +19,10 @@ def retry_func(func):
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                print(f"Error,{e}\n Retrying...")
+                date = datetime.now().strftime("%d %M %Y at %H %M %S")
+                print(f"Error,{e} {date} \n Retrying...")
                 retries += 1
-        print("Max Retries resched")
+        print("Max Retries reached")
         return None
     return wrapper
 
@@ -35,12 +36,11 @@ def search(message):
     list_of_albums = get_artist_albums(uri)
     names = []
     uris = []
-    handler = get_handler_of_artist(message.text, uri, list_of_albums)
+    handler = get_handler_of_artist(name, uri, list_of_albums)
     for dict in list_of_albums:
         names.append(str(dict['index'] + 1) + '. ' + str(dict['name']) + "\n")
         uris.append(dict["uri"])
     text = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎵Genre(s): {', '.join(genres)} \n📀 Albums:\n       {'       '.join(names)}"
-    list_of_tracks = []
     bot.send_photo(message.chat.id, photo=image, caption=text, reply_markup=handler)
 
 @retry_func
@@ -58,13 +58,14 @@ def done(message):
     artist, preview_url, release_date, album, track_no, total_tracks = get_track_details(id)
     image = get_track_image(id)
     caption = f"👤Artist: {artist}\n🎵Song : {song.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
-    send_audios_or_previews(preview_url, image, caption, song, id, artist, message.chat.id)
-def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_id):
-    if preview_url is not None:
+    send_audios_or_previews(preview_url, image, caption, song, id, artist, message.chat.id,True)
+def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_id,send_photo):
+    if send_photo:
+        bot.send_photo(chat_id, photo=image, caption=caption, reply_markup=start_markup)
+    elif preview_url is not None :
         response = requests.get(preview_url)
         audio_content = response.content
         audio_io = BytesIO(audio_content)
-        bot.send_photo(chat_id, photo=image, caption=caption, reply_markup=start_markup)
         bot.send_audio(chat_id, audio=audio_io, title=f'{name}', performer=artist, reply_markup=start_markup)
     else:
         bot.send_message(chat_id, text=f"{caption}\n{base_url}{id}")
@@ -77,13 +78,14 @@ def get_album_songs(call_data,chat_id, list_of_albums):
             chosen_album = album
     release_date, total_tracks, photo = get_album_cover_art(chosen_album["uri"])
     caption = f"📀 Album: {album_name}\n⭐️ Released: {release_date}\n🔢 Total Tracks: {total_tracks}"
+    bot.send_photo(chat_id,photo,caption=caption)
     album_tracks = get_album_tracks(chosen_album["uri"])
     for track in album_tracks:
         name = track['name']
         id = track['id']
         artist, preview_url, release_date, album, track_no, total_tracks = get_track_details(id)
         caption = f"👤Artist: {artist}\n🔢Track : {track_no} of {total_tracks}\n🎵Song : {name}\n"
-        send_audios_or_previews(preview_url, photo, caption, name, id, artist, chat_id)
+        send_audios_or_previews(preview_url, photo, caption, name, id, artist, chat_id,False)
 
     bot.send_message(chat_id, f"Those are all the {total_tracks} tracks in {artist}'s {album_name} album 💪!",reply_markup=start_markup)
 
@@ -110,7 +112,7 @@ def get_top_tracks(chat_id, uri):
         }
         track_details.append(dict)
         caption = f"👤 Artist : {artist}\n🎵 Song : {name}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢 Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
-        send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_id)
+        send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_id,True)
     bot.send_message(chat_id, f"Those are {artist}'s top 🔝 {no_of_songs} top tracks 💪!", reply_markup=start_markup)
 
 
@@ -166,7 +168,7 @@ def topsongs(message):
         artist, preview_url, release_date, album, track_no, total_tracks = get_track_details(id)
         image = get_track_image(id)
         caption = f"👤Artist: {artist}\n🎵Song : {song}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
-        send_audios_or_previews(preview_url, image, caption, song, id, artist, message.chat.id)
+        send_audios_or_previews(preview_url, image, caption, song, id, artist, message.chat.id,True)
     bot.send_message(message.chat.id, f"Those are the top 🔝 {no_of_songs} biggest hits of this week 💪!",
                      reply_markup=start_markup)
 
@@ -205,8 +207,4 @@ def handle_query(call):
 
 
 print("Bot is on>>>>")
-# try:
-#     bot.polling()
-# except Exception as e:
-#     print(e, f'\n{datetime.now().strftime("%d-%m-%Y at %H:%M")}')
 bot.polling()
