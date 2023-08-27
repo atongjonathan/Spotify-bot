@@ -3,23 +3,35 @@ import random
 import html
 
 
-def create_album_keyboard (uri, list_of_albums):
+def make_for_type (artist_id, type, list_of_type):
     answers_keyboard = types.InlineKeyboardMarkup()
-    for album in list_of_albums:
+    for album in list_of_type:
         album_name = album["name"]
-        album_uri = album["uri"]
-        button = types.InlineKeyboardButton(album_name, callback_data=f'{album_uri}')
+        small_id = artist_id.split(':')[2]
+        small_uri = album['uri'].split(':')[2]
+        data = f"{small_id}_{type}_{small_uri}"
+        button = types.InlineKeyboardButton(album_name, callback_data=data)
         answers_keyboard.add(button)
     return answers_keyboard
-def get_handler_of_artist(name,uri,list_of_albums):
-    handler_markup = types.InlineKeyboardMarkup()
-    top_tracks_button = types.InlineKeyboardButton(f"{name.title()}'s Top Tracks🔝",callback_data=f"track_{uri}")
+# def top_tracks_handler(name,uri):
+#     handler_markup = types.InlineKeyboardMarkup()
+#     handler_markup.add(top_tracks_button)
+
+#     return handler_markup
+
+def handler(name,artist_uri, list_of_albums,list_of_singles):
+    markup = types.InlineKeyboardMarkup()
+    top_tracks_button = types.InlineKeyboardButton(f"{name}'s Top Tracks🔝",callback_data=f"track_{artist_uri}")
+    markup.add(top_tracks_button)
     if len(list_of_albums)>0:
-        album_list_button = types.InlineKeyboardButton("View Album🧐", callback_data=f'album_{uri}')
-        handler_markup.row(top_tracks_button,album_list_button)
-    else:
-        handler_markup.row(top_tracks_button)
-    return handler_markup
+        data = f'album_{artist_uri}'
+        album_list_button = types.InlineKeyboardButton(f"View {name}'s Albums🧐", callback_data=data)
+        markup.add(album_list_button)
+    if len(list_of_singles)>0:
+        data = f'single_{artist_uri}'
+        single_list_button = types.InlineKeyboardButton(f"View {name}'s Singles or EPs🧐", callback_data=data)
+        markup.add(single_list_button)    
+    return markup
 def create_keyboard(all_answers):
     answers_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
     random.shuffle(all_answers)

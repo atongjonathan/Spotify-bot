@@ -130,9 +130,9 @@ def get_album_tracks(album_id):
     
     return track_list
 
-def get_artist_albums(artist_id):
+def get_artist_albums(artist_id, type):
     # Get artist albums information
-    artist_albums_information = sp.artist_albums(artist_id, album_type='album')
+    artist_albums_information = sp.artist_albums(artist_id, album_type=type)
     
     
     # Extract album names and URIs from each item
@@ -182,6 +182,14 @@ def get_top_tracks(uri):
             "total_tracks":total_tracks
         }
         track_details.append(dict)
-    return track_details
+def get_artist_eps(artist_id):
+    eps = []
 
-# print(get_top_tracks("spotify:artist:4dpARuHxo51G3z768sgnrY"))
+    artist_albums = sp.artist_albums(artist_id, album_type='single')
+    for album in artist_albums['items']:
+        album_type = album['album_type']
+        if album_type == 'single':
+            eps.append(album["name"])
+
+    return eps
+# print(get_artist_albums("spotify:artist:0C8ZW7ezQVs4URX5aX7Kqx",'single')[0])

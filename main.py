@@ -11,16 +11,16 @@ from datetime import datetime
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
 base_url = "https://open.spotify.com/track/"
-MAX_RETRIES = 5
+MAX_RETRIES = 10
 def retry_func(func):
     def wrapper(*args, **kwargs):
         retries = 0
         while retries < MAX_RETRIES:
             try:
                 return func(*args, **kwargs)
-            except Exception as e:
+            except ConnectionError as e:
                 date = datetime.now().strftime("%d %M %Y at %H %M %S")
-                print(f"Error,{e} {date} \n Retrying...")
+                print(f"Error {retries},{e} {date} \n Retrying...")
                 retries += 1
         print("Max Retries reached")
         return None
@@ -28,20 +28,24 @@ def retry_func(func):
 
 @retry_func
 def search(message):
-    uri, followers, images, name, genres = get_details_artist(message.text)
-    global uri_global
-    uri_global = uri
+    artist_uri, followers, images, name, genres = get_details_artist(message.text)
     image = images[0]
     genres = [item.title() for item in genres]
-    list_of_albums = get_artist_albums(uri)
-    names = []
-    uris = []
-    handler = get_handler_of_artist(name, uri, list_of_albums)
-    for dict in list_of_albums:
-        names.append(str(dict['index'] + 1) + '. ' + str(dict['name']) + "\n")
-        uris.append(dict["uri"])
-    text = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎵Genre(s): {', '.join(genres)} \n📀 Albums:\n       {'       '.join(names)}"
-    bot.send_photo(message.chat.id, photo=image, caption=text, reply_markup=handler)
+    list_of_albums = get_artist_albums(artist_uri, "album")
+    list_of_singles = get_artist_albums(artist_uri,"single")
+    album_names = []
+    ep_names = []
+    for index,dict in enumerate(list_of_singles):
+        ep_names.append(str(index + 1) + '. ' + str(dict['name']) + "\n")
+    for index,dict in enumerate(list_of_albums):
+        album_names.append(str(index + 1) + '. ' + str(dict['name']) + "\n")
+
+    caption = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎵Genre(s): {', '.join(genres)} \n"
+    # singles_text = f"📀 Singles:\n       {'       '.join(ep_names)}"
+    # albums_text = f"📀 Albums:\n       {'       '.join(album_names)}\n"
+    bot.send_photo(message.chat.id, photo=image, caption=caption, reply_markup=handler(name,artist_uri,list_of_albums,list_of_singles))
+    # bot.send_message(message.chat.id, text=albums_text, reply_markup=handler(artist_uri,'album',list_of_albums))
+    # bot.send_message(message.chat.id, text=singles_text, reply_markup=handler(artist_uri,'single',list_of_singles))
 
 @retry_func
 def done(message):
@@ -62,7 +66,7 @@ def done(message):
 def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_id,send_photo):
     if send_photo:
         bot.send_photo(chat_id, photo=image, caption=caption, reply_markup=start_markup)
-    elif preview_url is not None :
+    if preview_url is not None :
         response = requests.get(preview_url)
         audio_content = response.content
         audio_io = BytesIO(audio_content)
@@ -71,12 +75,12 @@ def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_
         bot.send_message(chat_id, text=f"{caption}\n{base_url}{id}")
 
 
-def get_album_songs(call_data,chat_id, list_of_albums):
-    for album in list_of_albums:
-        if call_data == album["uri"]:
+def get_album_songs(small_uri,chat_id, list_of_albums):
+    for idx, album in enumerate(list_of_albums):
+        if small_uri in album['uri'].split(":")[2]:
             album_name = album["name"]
             chosen_album = album
-    release_date, total_tracks, photo = get_album_cover_art(chosen_album["uri"])
+    release_date, total_tracks, photo = get_album_cover_art(small_uri)
     caption = f"📀 Album: {album_name}\n⭐️ Released: {release_date}\n🔢 Total Tracks: {total_tracks}"
     bot.send_photo(chat_id,photo,caption=caption)
     album_tracks = get_album_tracks(chosen_album["uri"])
@@ -118,9 +122,9 @@ def get_top_tracks(chat_id, uri):
 
 
 
-def send_checker(uri, chat_id, list_of_albums):
-    bot.send_message(chat_id, "Awesome which album's tracks do you want to get?",
-                     reply_markup=create_album_keyboard(uri, list_of_albums))
+def send_checker(artist_id ,type, list_of_type, chat_id):
+    bot.send_message(chat_id, "Awesome which ones tracks do you want to get?",
+                     reply_markup=make_for_type(artist_id,type,list_of_type))
 
 
 @bot.message_handler(commands=['start'])
@@ -197,14 +201,29 @@ def handle_query(call):
     if call.data.startswith('album_'):
         uri = call.data.split('_')[1]
         chat_id = call.message.chat.id
-        send_checker(uri, chat_id, get_artist_albums(uri))
+        list_of_type = get_artist_albums((uri),'album')
+        send_checker(uri,"album",list_of_type,chat_id)
+    if call.data.startswith('single_'):
+        uri = call.data.split('_')[1]
+        chat_id = call.message.chat.id
+        list_of_type = get_artist_albums((uri),'single')
+        send_checker(uri,"single",list_of_type,chat_id)
     elif call.data.startswith("track_"):
         uri = call.data.split('_')[1]
         get_top_tracks(call.message.chat.id, uri)
     else:
-        # uri = call.data.split(":")[2]
-        get_album_songs(call.data, call.message.chat.id, get_artist_albums(uri_global))
+        split_data = call.data.split('_')
+        if len(split_data) >= 3:
+            small_id = split_data[0]
+            type = split_data[1]
+            small_uri = split_data[2]
+            list_of_type = get_artist_albums(small_id, type)
+            get_album_songs(small_uri, call.message.chat.id, list_of_type)
+        else:
+            bot.send_message(call.message.chat.id, "Invalid callback data format.")
+
 
 
 print("Bot is on>>>>")
-bot.polling()
+if __name__ == "__main__":
+    bot.polling()
