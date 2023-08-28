@@ -25,7 +25,15 @@ def retry_func(func):
         print("Max Retries reached")
         return None
     return wrapper
+chat_user_data = {}
 
+# Add a new chat and user to the dictionary
+def add_chat_user(chat_id, user_id):
+    if chat_id not in chat_user_data:
+        chat_user_data[chat_id] = [user_id]
+    else:
+        if user_id not in chat_user_data[chat_id]:
+            chat_user_data[chat_id].append(user_id)
 @retry_func
 def search(message):
     artist_uri, followers, images, name, genres = get_details_artist(message.text)
@@ -40,12 +48,8 @@ def search(message):
     for index,dict in enumerate(list_of_albums):
         album_names.append(str(index + 1) + '. ' + str(dict['name']) + "\n")
 
-    caption = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎵Genre(s): {', '.join(genres)} \n"
-    # singles_text = f"📀 Singles:\n       {'       '.join(ep_names)}"
-    # albums_text = f"📀 Albums:\n       {'       '.join(album_names)}\n"
+    caption = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎭Genre(s): {', '.join(genres)} \n"
     bot.send_photo(message.chat.id, photo=image, caption=caption, reply_markup=handler(name,artist_uri,list_of_albums,list_of_singles))
-    # bot.send_message(message.chat.id, text=albums_text, reply_markup=handler(artist_uri,'album',list_of_albums))
-    # bot.send_message(message.chat.id, text=singles_text, reply_markup=handler(artist_uri,'single',list_of_singles))
 
 @retry_func
 def done(message):
@@ -128,8 +132,9 @@ def send_checker(artist_id ,type, list_of_type, chat_id):
 
 
 @bot.message_handler(commands=['start'])
-
 def welcome(message):
+    add_chat_user(message.chat.id,message.from_user.first_name)
+
     bot.send_message(message.chat.id, f"Hello {message.from_user.first_name}, Welcome to SG✨'s bot😅!",
                      reply_markup=start_markup)
 
@@ -220,10 +225,8 @@ def handle_query(call):
             list_of_type = get_artist_albums(small_id, type)
             get_album_songs(small_uri, call.message.chat.id, list_of_type)
         else:
-            bot.send_message(call.message.chat.id, "Invalid callback data format.")
+            print("Invalid callback data format.")
 
 
-
-# print("Bot is on>>>>")
-# if __name__ == "__main__":
+print("Bot is running 👌")
 bot.polling()
