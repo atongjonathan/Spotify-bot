@@ -37,7 +37,10 @@ def add_chat_user(chat_id, user_id):
 @retry_func
 def search(message):
     artist_uri, followers, images, name, genres = get_details_artist(message.text)
-    image = images[0]
+    try:
+        image = images[0]
+    except IndexError:
+        image = "https://cdn.business2community.com/wp-content/uploads/2014/03/Unknown-person.gif"
     genres = [item.title() for item in genres]
     list_of_albums = get_artist_albums(artist_uri, "album")
     list_of_singles = get_artist_albums(artist_uri,"single")
