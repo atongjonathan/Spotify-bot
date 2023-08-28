@@ -224,6 +224,6 @@ def handle_query(call):
 
 
 
-print("Bot is on>>>>")
-if __name__ == "__main__":
-    bot.polling()
+# print("Bot is on>>>>")
+# if __name__ == "__main__":
+bot.polling()
