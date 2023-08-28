@@ -22,6 +22,8 @@ def retry_func(func):
                 date = datetime.now().strftime("%d %M %Y at %H %M %S")
                 print(f"Error {retries},{e} {date} \n Retrying...")
                 retries += 1
+            except Exception as e:
+                print(f"Error {retries},{e} {date} \n Retrying...")
         print("Max Retries reached")
         return None
     return wrapper
@@ -89,7 +91,7 @@ def get_album_songs(small_uri,chat_id, list_of_albums):
             chosen_album = album
     release_date, total_tracks, photo = get_album_cover_art(small_uri)
     caption = f"📀 Album: {album_name}\n⭐️ Released: {release_date}\n🔢 Total Tracks: {total_tracks}"
-    bot.send_photo(chat_id,photo,caption=caption)
+    # bot.send_photo(chat_id,photo,caption=caption)
     album_tracks = get_album_tracks(chosen_album["uri"])
     for track in album_tracks:
         name = track['name']
@@ -98,7 +100,7 @@ def get_album_songs(small_uri,chat_id, list_of_albums):
         caption = f"👤Artist: {artist}\n🔢Track : {track_no} of {total_tracks}\n🎵Song : {name}\n"
         send_audios_or_previews(preview_url, photo, caption, name, id, artist, chat_id,False)
 
-    bot.send_message(chat_id, f"Those are all the {total_tracks} tracks in {artist}'s {album_name} album 💪!",reply_markup=start_markup)
+    bot.send_message(chat_id, f"Those are all the {total_tracks} tracks in {artist}'s {album_name} 💪!",reply_markup=start_markup)
 
 
 def get_top_tracks(chat_id, uri):
@@ -227,8 +229,6 @@ def handle_query(call):
             small_uri = split_data[2]
             list_of_type = get_artist_albums(small_id, type)
             get_album_songs(small_uri, call.message.chat.id, list_of_type)
-        else:
-            print("Invalid callback data format.")
 
 
 print("Bot is running 👌")
