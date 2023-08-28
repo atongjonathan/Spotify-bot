@@ -75,14 +75,13 @@ def done(message):
 def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_id,send_photo):
     if send_photo:
         bot.send_photo(chat_id, photo=image, caption=caption, reply_markup=start_markup)
-    if preview_url is not None :
+    if preview_url is None :
+        bot.send_message(chat_id, text=f"{caption}\n{base_url}{id}")
+    else:
         response = requests.get(preview_url)
         audio_content = response.content
         audio_io = BytesIO(audio_content)
         bot.send_audio(chat_id, audio=audio_io, title=f'{name}', performer=artist, reply_markup=start_markup)
-    else:
-        bot.send_message(chat_id, text=f"{caption}\n{base_url}{id}")
-
 
 def get_album_songs(small_uri,chat_id, list_of_albums):
     for idx, album in enumerate(list_of_albums):
@@ -91,7 +90,7 @@ def get_album_songs(small_uri,chat_id, list_of_albums):
             chosen_album = album
     release_date, total_tracks, photo = get_album_cover_art(small_uri)
     caption = f"📀 Album: {album_name}\n⭐️ Released: {release_date}\n🔢 Total Tracks: {total_tracks}"
-    # bot.send_photo(chat_id,photo,caption=caption)
+    bot.send_photo(chat_id,photo,caption=caption)
     album_tracks = get_album_tracks(chosen_album["uri"])
     for track in album_tracks:
         name = track['name']
