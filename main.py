@@ -31,10 +31,12 @@ chat_user_data = {0}
 
 # Add a new chat and user to the dictionary
 def add_chat_user(chat_id, fname, lname, uname):
-    with open("data/names.txt", 'a') as file:
-        file.write(f"\n{fname}, {lname}, {uname}")
-    with open("data/chats.txt", 'a') as file:
-        file.write(f"\n{chat_id}")
+    date = datetime.now().strftime("%d %M %Y at %H %M %S")
+    print(f"{fname} {lname} @{uname} accessed\n chat -{chat_id} at {date}")
+    # with open("data/names.txt", 'a') as file:
+    #     file.write(f"\n{fname}, {lname}, {uname}")
+    # with open("data/chats.txt", 'a') as file:
+    #     file.write(f"\n{chat_id}")
 @retry_func
 def search(message):
     artist_uri, followers, images, name, genres = get_details_artist(message.text)
