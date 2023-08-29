@@ -165,9 +165,6 @@ def artist(message):
 
 
 
-
-
-
 @bot.message_handler(commands=['topsongs'])
 def topsongs(message):
     no_of_songs = 10
