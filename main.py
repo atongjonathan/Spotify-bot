@@ -27,15 +27,14 @@ def retry_func(func):
         print("Max Retries reached")
         return None
     return wrapper
-chat_user_data = {}
+chat_user_data = {0}
 
 # Add a new chat and user to the dictionary
-def add_chat_user(chat_id, user_id):
-    if chat_id not in chat_user_data:
-        chat_user_data[chat_id] = [user_id]
-    else:
-        if user_id not in chat_user_data[chat_id]:
-            chat_user_data[chat_id].append(user_id)
+def add_chat_user(chat_id, fname, lname, uname):
+    with open("data/names.txt", 'a') as file:
+        file.write(f"\n{fname}, {lname}, {uname}")
+    with open("data/chats.txt", 'a') as file:
+        file.write(f"\n{chat_id}")
 @retry_func
 def search(message):
     artist_uri, followers, images, name, genres = get_details_artist(message.text)
@@ -137,7 +136,7 @@ def send_checker(artist_id ,type, list_of_type, chat_id):
 
 @bot.message_handler(commands=['start'])
 def welcome(message):
-    add_chat_user(message.chat.id,message.from_user.first_name)
+    add_chat_user(message.chat.id,message.from_user.first_name, message.from_user.last_name,message.from_user.username)
 
     bot.send_message(message.chat.id, f"Hello {message.from_user.first_name}, Welcome to SG✨'s bot😅!",
                      reply_markup=start_markup)
