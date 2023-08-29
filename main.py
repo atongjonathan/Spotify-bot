@@ -142,9 +142,9 @@ def welcome(message):
                      reply_markup=start_markup)
 
 
-@bot.message_handler(commands=['info'])
-def info(message):
-    bot.reply_to(message, "Developer: @JonaAtong™.")
+# @bot.message_handler(commands=['info'])
+# def info(message):
+#     bot.reply_to(message, "Developer: @JonaAtong™.")
 
 
 @bot.message_handler(commands=['status'])
