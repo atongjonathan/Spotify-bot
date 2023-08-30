@@ -10,6 +10,8 @@ from datetime import datetime
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
+date = datetime.now().strftime("%d %M %Y at %H %M %S")
+
 base_url = "https://open.spotify.com/track/"
 MAX_RETRIES = 10
 def retry_func(func):
@@ -31,7 +33,6 @@ chat_user_data = {0}
 
 # Add a new chat and user to the dictionary
 def add_chat_user(chat_id, fname, lname, uname):
-    date = datetime.now().strftime("%d %M %Y at %H %M %S")
     print(f"{fname} {lname} @{uname} accessed\n chat -{chat_id} at {date}")
     # with open("data/names.txt", 'a') as file:
     #     file.write(f"\n{fname}, {lname}, {uname}")
@@ -140,7 +141,7 @@ def send_checker(artist_id ,type, list_of_type, chat_id):
 def welcome(message):
     add_chat_user(message.chat.id,message.from_user.first_name, message.from_user.last_name,message.from_user.username)
 
-    bot.send_message(message.chat.id, f"Hello {message.from_user.first_name}, Welcome to SG✨'s bot😅!",
+    bot.send_message(message.chat.id, f"Hello {message.from_user.first_name}, Welcome to SG✨'s bot😅! See commands: ",
                      reply_markup=start_markup)
 
 
