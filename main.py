@@ -147,7 +147,10 @@ def welcome(message):
 
 @bot.message_handler(commands=['commands'])
 def info(message):
-    bot.reply_to(message, "⬆️ Show command buttons")
+    bot.reply_to(message, """/start - Starts the bot
+/song - Search for a song
+/artist - Search for an artist
+/topsongs - Get top 10 tracks in the world""")
 
 
 @bot.message_handler(commands=['status'])
