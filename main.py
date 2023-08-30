@@ -77,7 +77,7 @@ def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_
     if send_photo:
         bot.send_photo(chat_id, photo=image, caption=caption, reply_markup=start_markup)
     if preview_url is None :
-        bot.send_message(chat_id, text=f"{caption}\n{base_url}{id}")
+        bot.send_message(chat_id, text=f"{base_url}{id}")
     else:
         response = requests.get(preview_url)
         audio_content = response.content

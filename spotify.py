@@ -22,7 +22,7 @@ sp = spotipy.Spotify(
         cache_path="token.txt"
     )
 )
-no_of_songs = 5
+no_of_songs = 10
 
 top_songs = []
 def artist_top_tracks(uri, no_of_tracks):
@@ -45,22 +45,35 @@ def get_ids(dict_of_songs:dict):
 
 # Artist details❤
 def get_details_artist(name:str):
+    name = name.lower()
     artists_results = spotify.search(q=name, type="artist")
-    artist_details = artists_results["artists"]["items"][0]
-    uri = artist_details["uri"]
-    followers = artist_details["followers"]["total"]
-    images_data = artist_details["images"]
+    artist_list = artists_results["artists"]["items"]
+    sorted_persons = sorted(artist_list, key=lambda person: person["popularity"], reverse=True)
+    for artist in sorted_persons:
+        if name in str(artist["name"]).lower():
+            chosen_artist = artist
+            break
+    uri = chosen_artist["uri"]
+    followers = chosen_artist["followers"]["total"]
+    images_data = chosen_artist["images"]
     images = [item["url"] for item in images_data]
-    name = artist_details["name"]
-    genres = artist_details["genres"]
+    name = chosen_artist["name"]
+    genres = chosen_artist["genres"]
     return uri,followers,images,name,genres
 
 
 # Search for a track
 def get_track_id(artist:str,track:str):
-    best_song = spotify.search(q=f"{artist}, {track}", type='track')
-    best_song_id = best_song["tracks"]["items"][0]["id"]
-    return best_song_id
+    data = spotify.search(q=f"artist: '{artist[:20]}' track:'{track}'", type="track")
+    songs = data["tracks"]["items"]
+    chosen_song = songs[0]
+    # for song in songs:
+    #     if track in song['name']:
+    #         chosen_song = song
+    #         break
+    #     else:
+    #         print(track in song['name'], song['name'])
+    return chosen_song["id"]
 
 
 # # Create a playlist and add tracks
@@ -192,4 +205,4 @@ def get_artist_eps(artist_id):
             eps.append(album["name"])
 
     return eps
-# print(get_artist_albums("spotify:artist:0C8ZW7ezQVs4URX5aX7Kqx",'single')[0])
+
