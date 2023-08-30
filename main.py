@@ -12,7 +12,6 @@ import time
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
 base_url = "https://open.spotify.com/track/"
-date = datetime.now().strftime("%d %M %Y at %H %M %S")
 MAX_RETRIES = 10
 def retry_func(func):
     def wrapper(*args, **kwargs):
@@ -25,6 +24,7 @@ def retry_func(func):
                 print(f"Error {retries},{e} {date} \n Retrying...")
                 retries += 1
             except Exception as e:
+                date = datetime.now().strftime("%d %M %Y at %H %M %S")
                 print(f"Error {retries},{e} {date} \n Retrying...")
         print("Max Retries reached")
         return None
@@ -33,6 +33,7 @@ chat_user_data = {0}
 
 # Add a new chat and user to the dictionary
 def add_chat_user(chat_id, fname, lname, uname):
+    date = datetime.now().strftime("%d %M %Y at %H %M %S")
     print(f"{fname} {lname} @{uname} accessed\n chat -{chat_id} at {date}")
     # with open("data/names.txt", 'a') as file:
     #     file.write(f"\n{fname}, {lname}, {uname}")
