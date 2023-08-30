@@ -141,13 +141,13 @@ def send_checker(artist_id ,type, list_of_type, chat_id):
 def welcome(message):
     add_chat_user(message.chat.id,message.from_user.first_name, message.from_user.last_name,message.from_user.username)
 
-    bot.send_message(message.chat.id, f"Hello {message.from_user.first_name}, Welcome to SG✨'s bot😅! See commands: ",
+    bot.send_message(message.chat.id, f"Hello {message.from_user.first_name}, Welcome to SG✨'s bot😅! \nSee commands:Click /commands ",
                      reply_markup=start_markup)
 
 
-# @bot.message_handler(commands=['info'])
-# def info(message):
-#     bot.reply_to(message, "Developer: @JonaAtong™.")
+@bot.message_handler(commands=['commands'])
+def info(message):
+    bot.reply_to(message, "⬆️ Show command buttons")
 
 
 @bot.message_handler(commands=['status'])
