@@ -1,6 +1,5 @@
 import telebot
 import random
-from info import quotes
 from top_songs import get_data
 from keyboards import *
 from spotify import *
@@ -12,8 +11,7 @@ import time
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
 base_url = "https://open.spotify.com/track/"
-date = datetime.now().strftime("%d %M %Y at %H %M %S")
-MAX_RETRIES = 10
+MAX_RETRIES = 5
 def retry_func(func):
     def wrapper(*args, **kwargs):
         retries = 0
@@ -21,25 +19,24 @@ def retry_func(func):
             try:
                 return func(*args, **kwargs)
             except ConnectionError as e:
-                date = datetime.now().strftime("%d %M %Y at %H %M %S")
-                print(f"Error {retries},{e} {date} \n Retrying...")
-                retries += 1
+                print(f"Error {retries},{e} \n Retrying...")
             except Exception as e:
-                print(f"Error {retries},{e} {date} \n Retrying...")
+                print(f"Another exception occurred, {e}")
+            retries += 1
         print("Max Retries reached")
         return None
     return wrapper
-chat_user_data = {0}
 
 # Add a new chat and user to the dictionary
 def add_chat_user(chat_id, fname, lname, uname):
-    print(f"{fname} {lname} @{uname} accessed\n chat -{chat_id} at {date}")
-    # with open("data/names.txt", 'a') as file:
-    #     file.write(f"\n{fname}, {lname}, {uname}")
-    # with open("data/chats.txt", 'a') as file:
-    #     file.write(f"\n{chat_id}")
+    print(f"{fname} {lname} @{uname} accessed\nChat: {chat_id}")
+
 @retry_func
 def search(message):
+    if get_details_artist(message.text) == None:
+        bot.send_message(message.chat.id,
+        "Artist not found!⚠. Make sure to include all artist name properties including supersripts.\nTry again? /artist")
+        return
     artist_uri, followers, images, name, genres = get_details_artist(message.text)
     try:
         image = images[0]
@@ -79,7 +76,7 @@ def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_
     if send_photo:
         bot.send_photo(chat_id, photo=image, caption=caption, reply_markup=start_markup)
     if preview_url is None :
-        bot.send_message(chat_id, text=f"{caption}\n{base_url}{id}")
+        bot.send_message(chat_id, text=f"{base_url}{id}")
     else:
         response = requests.get(preview_url)
         audio_content = response.content
@@ -142,13 +139,16 @@ def send_checker(artist_id ,type, list_of_type, chat_id):
 def welcome(message):
     add_chat_user(message.chat.id,message.from_user.first_name, message.from_user.last_name,message.from_user.username)
 
-    bot.send_message(message.chat.id, f"Hello {message.from_user.first_name}, Welcome to SG✨'s bot😅!",
+    bot.send_message(message.chat.id, f"Hello {message.from_user.first_name}, Welcome to Spotify SG✨'s bot!. For help see commands?👉 /commands",
                      reply_markup=start_markup)
 
 
-# @bot.message_handler(commands=['info'])
-# def info(message):
-#     bot.reply_to(message, "Developer: @JonaAtong™.")
+@bot.message_handler(commands=['commands'])
+def info(message):
+    bot.reply_to(message, """/start - Starts the bot
+/song - Search for a song
+/artist - Search for an artist
+/topsongs - Get top 10 tracks in the world""")
 
 
 @bot.message_handler(commands=['status'])
@@ -158,6 +158,8 @@ def status(message):
 
 @bot.message_handler(commands=['quote'])
 def quote(message):
+    with open("quote.txt") as file:
+        quotes = file.readlines()
     today_quote = random.choice(quotes)
     bot.reply_to(message, f"{(today_quote)}")
 

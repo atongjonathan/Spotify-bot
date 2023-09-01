@@ -12,16 +12,16 @@ spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
 # # Authorization 2
 scope = "playlist-modify-public"
 
-sp = spotipy.Spotify(
-    auth_manager=SpotifyOAuth(
-        scope="playlist-modify-private",
-        redirect_uri="http://example.com",
-        client_id=SPOTIPY_CLIENT_ID,
-        client_secret= SPOTIPY_CLIENT_SECRET,
-        show_dialog=True,
-        cache_path="token.txt"
-    )
-)
+# sp = spotipy.Spotify(
+#     auth_manager=SpotifyOAuth(
+#         scope="playlist-modify-private",
+#         redirect_uri="http://example.com",
+#         client_id=SPOTIPY_CLIENT_ID,
+#         client_secret= SPOTIPY_CLIENT_SECRET,
+#         show_dialog=True,
+#         cache_path="token.txt"
+#     )
+# )
 no_of_songs = 10
 
 top_songs = []
@@ -49,10 +49,13 @@ def get_details_artist(name:str):
     artists_results = spotify.search(q=name, type="artist")
     artist_list = artists_results["artists"]["items"]
     sorted_persons = sorted(artist_list, key=lambda person: person["popularity"], reverse=True)
+    chosen_artist = None
     for artist in sorted_persons:
         if name in str(artist["name"]).lower():
             chosen_artist = artist
             break
+    if chosen_artist is None:
+        return None
     uri = chosen_artist["uri"]
     followers = chosen_artist["followers"]["total"]
     images_data = chosen_artist["images"]
@@ -78,16 +81,16 @@ def get_track_id(artist:str,track:str):
 
 # # Create a playlist and add tracks
 def create_playlist(all_ids):
-    playlist = sp.user_playlist_create(name="Olivia Rodrigo Vampire playlist", description="Testing Spotipy app",user="0rcm19m6sa0i20keycezqykyj",public=True)
+    playlist = spotify.user_playlist_create(name="Olivia Rodrigo Vampire playlist", description="Testing Spotipy app",user="0rcm19m6sa0i20keycezqykyj",public=True)
     playlist_id = playlist
     # Add tracks
-    sp.user_playlist_add_tracks(user="0rcm19m6sa0i20keycezqykyj",playlist_id="41ZEbDPBl5OERQNEANqTLc",tracks=all_ids)
+    spotify.user_playlist_add_tracks(user="0rcm19m6sa0i20keycezqykyj",playlist_id="41ZEbDPBl5OERQNEANqTLc",tracks=all_ids)
     return playlist_id
 
 # Get user's saved tracks
 def get_my_saved_tracks():
     all_saved = []
-    results = sp.current_user_saved_tracks()
+    results = spotify.current_user_saved_tracks()
     for idx, item in enumerate(results['items']):
         track = item['track']
         index = idx
@@ -103,7 +106,7 @@ def get_my_saved_tracks():
 
 def get_track_image(track_id):
     # Get track information
-    track_info = sp.track(track_id)
+    track_info = spotify.track(track_id)
 
     # Get the cover art URL
     if track_info.get('album') and track_info['album'].get('images'):
@@ -113,7 +116,7 @@ def get_track_image(track_id):
         return None
 
 def get_track_details(track_id):
-    track_info = sp.track(track_id)
+    track_info = spotify.track(track_id)
     artist = track_info["album"]["artists"][0]["name"]
     album = track_info["album"]["name"]
     release_date = track_info["album"]["release_date"]
@@ -132,7 +135,7 @@ def get_albums(uri):
 
 def get_album_tracks(album_id):
     # Get album tracks information
-    album_tracks_info = sp.album_tracks(album_id)
+    album_tracks_info = spotify.album_tracks(album_id)
     
     # Extract track information from each item
     track_list = []
@@ -145,7 +148,7 @@ def get_album_tracks(album_id):
 
 def get_artist_albums(artist_id, type):
     # Get artist albums information
-    artist_albums_information = sp.artist_albums(artist_id, album_type=type)
+    artist_albums_information = spotify.artist_albums(artist_id, album_type=type)
     
     
     # Extract album names and URIs from each item
@@ -168,7 +171,7 @@ def get_album_cover_art(album_uri):
     album_id = album_uri.split(':')[-1]
     
     # Get album information
-    album_info = sp.album(album_id)
+    album_info = spotify.album(album_id)
     release_date = album_info['release_date']
     total_tracks = album_info['total_tracks']
     cover_art_url = album_info['images'][0]['url']
@@ -198,7 +201,7 @@ def get_top_tracks(uri):
 def get_artist_eps(artist_id):
     eps = []
 
-    artist_albums = sp.artist_albums(artist_id, album_type='single')
+    artist_albums = spotify.artist_albums(artist_id, album_type='single')
     for album in artist_albums['items']:
         album_type = album['album_type']
         if album_type == 'single':
