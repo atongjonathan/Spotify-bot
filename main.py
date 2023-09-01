@@ -145,10 +145,8 @@ def welcome(message):
 
 @bot.message_handler(commands=['commands'])
 def info(message):
-    bot.reply_to(message, """/start - Starts the bot
-/song - Search for a song
-/artist - Search for an artist
-/topsongs - Get top 10 tracks in the world""")
+    bot.reply_to(message, "/start - Starts the bot\n/song - Search for a song\n/artist - Search for an artist")
+#/topsongs - Get top 10 tracks in the world")
 
 
 @bot.message_handler(commands=['status'])
@@ -171,15 +169,19 @@ def artist(message):
 
 
 
-@bot.message_handler(commands=['topsongs'])
+# @bot.message_handler(commands=['topsongs'])
 def topsongs(message):
-    no_of_songs = 10
-    bot.send_chat_action(message.chat.id, "typing")
+    bot.send_message(message.chat.id, "typing")
+    print(no_of_songs)
     titles, artists = get_data(no_of_songs)
+    # print(type(titles))
     for index in range(0, no_of_songs):
         artist = artists[index]
         song = titles[index]
-        id = get_track_id(artist, song)
+        print(song)
+        # id = get_track_id(artist, song)
+        # print(id)
+        return
         artist, preview_url, release_date, album, track_no, total_tracks = get_track_details(id)
         image = get_track_image(id)
         caption = f"👤Artist: {artist}\n🎵Song : {song}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
@@ -230,6 +232,7 @@ def handle_query(call):
             small_uri = split_data[2]
             list_of_type = get_artist_albums(small_id, type)
             get_album_songs(small_uri, call.message.chat.id, list_of_type)
+
 
 print("Bot is running 👌")
 bot.polling()
