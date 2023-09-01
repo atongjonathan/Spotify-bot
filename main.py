@@ -231,6 +231,5 @@ def handle_query(call):
             list_of_type = get_artist_albums(small_id, type)
             get_album_songs(small_uri, call.message.chat.id, list_of_type)
 
-
 print("Bot is running 👌")
 bot.polling()
