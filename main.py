@@ -1,12 +1,14 @@
 import telebot
 import random
-from top_songs import get_data
+# from top_songs import get_data
 from keyboards import *
 from spotify import *
 import requests, os
 from io import BytesIO
 from datetime import datetime
 import time
+from lyrics import get_lyrics
+from audio import *
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
@@ -20,8 +22,8 @@ def retry_func(func):
                 return func(*args, **kwargs)
             except ConnectionError as e:
                 print(f"Error {retries},{e} \n Retrying...")
-            except Exception as e:
-                print(f"Another exception occurred, {e}")
+            # except Exception as e:
+            #     print(f"Another exception occurred, {e}")
             retries += 1
         print("Max Retries reached")
         return None
@@ -54,7 +56,6 @@ def search(message):
 
     caption = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎭Genre(s): {', '.join(genres)} \n"
     bot.send_photo(message.chat.id, photo=image, caption=caption, reply_markup=handler(name,artist_uri,list_of_albums,list_of_singles))
-
 @retry_func
 def done(message):
     text_message = message.text
@@ -72,16 +73,32 @@ def done(message):
     caption = f"👤Artist: {artist}\n🎵Song : {song.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
     send_audios_or_previews(preview_url, image, caption, song, id, artist, message.chat.id,True)
 def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_id,send_photo):
-    time.sleep(1.5)
+    track_url = f"{base_url}{id}"
     if send_photo:
         bot.send_photo(chat_id, photo=image, caption=caption, reply_markup=start_markup)
-    if preview_url is None :
-        bot.send_message(chat_id, text=f"{base_url}{id}")
+    update = bot.send_message(chat_id, "Finding song...")
+    track = spotify.track(track_url)
+    title = track["name"]
+    query = f"{title} {artist} Lyric Video"
+    data = download_webm(get_yt_url(query))
+    if data is not None:
+        files = [f for f in os.listdir('.') if os.path.isfile(f) and f.endswith('.mp3')]
+        set_metadata(get_track_info(track_url), file_path=files[0])
+        path = files[0]
+        with open(path, "rb") as file:
+            bot.send_chat_action(chat_id, "upload_audio")
+            bot.send_audio(chat_id, file)
+        os.remove(path)
+    elif preview_url is None :
+        bot.send_message(chat_id, text=f"{track_url}")
     else:
         response = requests.get(preview_url)
         audio_content = response.content
         audio_io = BytesIO(audio_content)
+        bot.send_chat_action(chat_id, "upload_audio")
         bot.send_audio(chat_id, audio=audio_io, title=f'{name}', performer=artist, reply_markup=start_markup)
+    bot.delete_message(chat_id, update.id)
+
 
 def get_album_songs(small_uri,chat_id, list_of_albums):
     for idx, album in enumerate(list_of_albums):
@@ -153,6 +170,32 @@ def info(message):
 def status(message):
     bot.reply_to(message, "I am awake😏.")
 
+def send_lyrics(message):
+    bot.send_chat_action(message.chat.id, action="typing")
+    song_data = get_lyrics(message.text)
+    if song_data is None:
+        bot.send_message("Lyrics not found!")
+        return
+    cover_image = song_data["coverImage"]
+    release_date = song_data['releaseDate']
+    thumbnail = song_data["thumbnail"]
+    artist = song_data["artist"]
+    title = song_data["title"]
+    lyrics = song_data["lyrics"]
+    caption = f"👤Artist: {artist}\n🎵Song : {title}\n━━━━━━━━━━━━\n⭐️ Released: {release_date}"
+    bot.send_photo(message.chat.id, photo=cover_image, caption=caption)
+    bot.send_message(message.chat.id, f"\n🎼Lyrics:\n{lyrics}")
+    bot.send_message(message.chat.id, lyrics)
+@bot.message_handler(commands=['lyrics'])
+def handle_lyrics(message):
+    bot.send_message(message.chat.id, "Awesome, send me the name of the song with the artist separated by a comma")
+    bot.register_next_step_handler_by_chat_id(message.chat.id, lambda msg : send_lyrics(msg))
+
+@bot.message_handler(commands=["document"])
+def document(message):
+    with open("naruto.mp4", "rb") as file:
+        bot.send_chat_action()
+        bot.send_video(message.chat.id,file, supports_streaming=True)
 
 @bot.message_handler(commands=['quote'])
 def quote(message):
@@ -172,15 +215,11 @@ def artist(message):
 # @bot.message_handler(commands=['topsongs'])
 def topsongs(message):
     bot.send_message(message.chat.id, "typing")
-    print(no_of_songs)
     titles, artists = get_data(no_of_songs)
-    # print(type(titles))
     for index in range(0, no_of_songs):
         artist = artists[index]
         song = titles[index]
-        print(song)
-        # id = get_track_id(artist, song)
-        # print(id)
+
         return
         artist, preview_url, release_date, album, track_no, total_tracks = get_track_details(id)
         image = get_track_image(id)
@@ -192,9 +231,7 @@ def topsongs(message):
 
 @bot.message_handler(commands=["song"])
 def get_song(message):
-    bot.send_message(message.chat.id,
-                     "Send me the name of the song followed by a comma and finally the name of the artist.",
-                     reply_markup=force_markup)
+    bot.send_message(message.chat.id, "Awesome, send the name of the song with the artist separated by a comma", reply_markup=force_markup)
     bot.register_next_step_handler_by_chat_id(message.chat.id, lambda message: done(message))
 
 

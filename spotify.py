@@ -22,7 +22,7 @@ scope = "playlist-modify-public"
 #         cache_path="token.txt"
 #     )
 # )
-no_of_songs = 10
+no_of_songs = 5
 
 top_songs = []
 def artist_top_tracks(uri, no_of_tracks):
@@ -70,12 +70,6 @@ def get_track_id(artist:str,track:str):
     data = spotify.search(q=f"artist: '{artist[:20]}' track:'{track}'", type="track")
     songs = data["tracks"]["items"]
     chosen_song = songs[0]
-    # for song in songs:
-    #     if track in song['name']:
-    #         chosen_song = song
-    #         break
-    #     else:
-    #         print(track in song['name'], song['name'])
     return chosen_song["id"]
 
 
