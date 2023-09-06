@@ -21,7 +21,7 @@ def get_yt_url(query):
     first_video = f"https://www.youtube.com/watch?v={best_id}"
     return first_video
 def download_webm(vid_url, title):
-    yt =YouTube(vid_url, allow_oauth_cache=True, use_oauth=True)
+    yt =YouTube(vid_url)
     try:
         itag = yt.streams.filter(only_audio=True, abr="160kbps").first().itag
     except Exception:
@@ -29,7 +29,7 @@ def download_webm(vid_url, title):
     if title not in yt.title:
         return None
     audio = yt.streams.get_by_itag(itag).download()
-    base = os.path.splitext(audio)[1]
+    base = os.path.splitext(audio)[0]
     audio_file = base + ".mp3"
     mp4_no_frame = AudioFileClip(audio)
     mp4_no_frame.write_audiofile(audio_file, logger=None)
