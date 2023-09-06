@@ -21,7 +21,7 @@ def get_yt_url(query):
     first_video = f"https://www.youtube.com/watch?v={best_id}"
     return first_video
 def download_webm(vid_url, title):
-    yt =YouTube(vid_url)
+    yt =YouTube(vid_url, allow_oauth_cache=True, use_oauth=True)
     try:
         itag = yt.streams.filter(only_audio=True, abr="160kbps").first().itag
     except Exception:

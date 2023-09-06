@@ -71,6 +71,7 @@ def done(message):
     image = get_track_image(id)
     caption = f"👤Artist: {artist}\n🎵Song : {song.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
     send_audios_or_previews(preview_url, image, caption, song, id, artist, message.chat.id,True)
+@retry_func
 def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_id,send_photo):
     track_url = f"{base_url}{id}"
     if send_photo:
