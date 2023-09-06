@@ -13,11 +13,11 @@ def make_for_type (artist_id, type, list_of_type):
         button = types.InlineKeyboardButton(album_name, callback_data=data)
         answers_keyboard.add(button)
     return answers_keyboard
-# def top_tracks_handler(name,uri):
-#     handler_markup = types.InlineKeyboardMarkup()
-#     handler_markup.add(top_tracks_button)
-
-#     return handler_markup
+def lyrics_handler(artist,title):
+    handler_markup = types.InlineKeyboardMarkup()
+    lyrics_button = types.InlineKeyboardButton(text="Get Lyrics", callback_data=f"lyrics_{title}_{artist}")
+    handler_markup.add(lyrics_button)
+    return handler_markup
 
 def handler(name,artist_uri, list_of_albums,list_of_singles):
     markup = types.InlineKeyboardMarkup()
@@ -61,7 +61,7 @@ force_markup = types.ForceReply()
 start_markup = types.ReplyKeyboardMarkup(resize_keyboard=True,
                                          one_time_keyboard=False)
 start_markup.row("⬇️ Hide command buttons")
-start_markup.row('/song', '/artist')
+start_markup.row('/lyrics', '/song', '/artist')
 start_markup.row('/quote', '/status')
 
 keyboard = types.ReplyKeyboardMarkup(
