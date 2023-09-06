@@ -167,7 +167,7 @@ def welcome(message):
 
 @bot.message_handler(commands=['commands'])
 def info(message):
-    bot.reply_to(message, "/start - Starts the bot\n/song - Search for a song\n/artist - Search for an artist")
+    bot.reply_to(message, "/start - Starts the bot\n/song - Search for a song\n/artist - Search for an artist\n/lyrics - Get lyrics of a song")
 #/topsongs - Get top 10 tracks in the world")
 
 
