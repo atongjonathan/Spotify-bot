@@ -5,6 +5,13 @@ from mutagen.easyid3 import EasyID3
 from mutagen.id3 import APIC, ID3, USLT
 from moviepy.editor import AudioFileClip
 import urllib.request
+import yt_dlp
+
+options = {
+    "format" : "bestaudio/best"
+}
+ytdl = yt_dlp.YoutubeDL(options)
+# ytdl(options)
 
 def get_yt_url(query):
     # Define a regular expression pattern to match non-English letters
@@ -17,27 +24,28 @@ def get_yt_url(query):
     response = urllib.request.urlopen(f"{base_url}{query}")
     soup = response.read().decode()
     search_results = re.findall(r"watch\?v=(\S{11})", soup)
-    best_id = search_results[0]
-    first_video = f"https://www.youtube.com/watch?v={best_id}"
-    return first_video
+    for url in (search_results[:5]):
+        yt_base = f"https://www.youtube.com/watch?v={url}"
+        yt = YouTube(yt_base)
+        if yt.length < 100:
+            pass
+        else:
+            best_uri = url    
+    return f"https://www.youtube.com/watch?v={best_uri}"
 def download_webm(vid_url, title):
-    yt =YouTube(vid_url, allow_oauth_cache=True, use_oauth=False)
-    try:
-        itag = yt.streams.filter(only_audio=True, abr="160kbps").first().itag
-    except Exception:
-        return None
-    if title not in yt.title:
-        return None
-    audio = yt.streams.get_by_itag(itag).download()
+    ytdl.download([vid_url])
+    for file in os.listdir("."):
+        if os.path.isfile(file) and file.endswith(".webm"):
+            audio = file
+            break 
     base = os.path.splitext(audio)[0]
     audio_file = base + ".mp3"
     mp4_no_frame = AudioFileClip(audio)
     mp4_no_frame.write_audiofile(audio_file, logger=None)
     mp4_no_frame.close()
     os.remove(audio)
-    os.replace(audio_file, f"{yt.title}.mp3")
-    audio_file = f"{yt.video_id}.mp3"
-    print(f"{yt.title}")
+    os.replace(audio_file, f"{title}.mp3")
+    audio_file = f"{title}.mp3"
     return audio_file
 
 def set_metadata(albumartist,artist,album,title,date,tracknumber,photo,file_path):

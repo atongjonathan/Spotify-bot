@@ -1,5 +1,8 @@
 import requests
 import html,os
+from lyrics_extractor import SongLyrics
+GCS_ENGINE_ID = os.getenv("GCS_ENGINE_ID")
+GCS_API_KEY = os.getenv("GCS_API_KEY")
 query = "People you know by Selena Gomez"
 def get_lyrics(query):
     """Gets the title, thumbnail, releaseDate, artist, coverImage, genius link of a song query"""
@@ -20,3 +23,10 @@ def get_lyrics(query):
     data["lyrics"] = new_data
     os.remove("lyrics.txt")
     return data
+
+# print(GCS_API_KEY,GCS_ENGINE_ID)
+extract_lyrics = SongLyrics(GCS_API_KEY, GCS_ENGINE_ID)
+# data = extract_lyrics.get_lyrics("Wakadinali")
+# print(data)
+# print(extract_lyrics("Single Sooon Selena Gomez"))
+# print(get_lyrics("It ain't me"))

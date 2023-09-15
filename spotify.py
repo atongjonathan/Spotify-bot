@@ -98,18 +98,13 @@ def get_my_saved_tracks():
         all_saved.append(item)
     return all_saved
 
-def get_track_image(track_id):
-    # Get track information
-    track_info = spotify.track(track_id)
 
-    # Get the cover art URL
-    if track_info.get('album') and track_info['album'].get('images'):
-        image = track_info['album']['images'][0]['url']
-        return image
-    else:
-        return None
-
-def get_track_details(track_id):
+def get_track_details(artist:str,track:str):
+    data = spotify.search(q=f"artist: '{artist}' track:'{track}'", type="track")
+    print(data)
+    songs = data["tracks"]["items"]
+    chosen_song = songs[0]
+    track_id = chosen_song["id"]
     track_info = spotify.track(track_id)
     artist = track_info["album"]["artists"][0]["name"]
     album = track_info["album"]["name"]
@@ -118,8 +113,12 @@ def get_track_details(track_id):
     track_no = track_info["track_number"]
     uri = track_info["uri"]
     preview_url = track_info["preview_url"]
-
-    return artist, preview_url, release_date, album, track_no,total_tracks
+        # Get the cover art URL
+    if track_info.get('album') and track_info['album'].get('images'):
+        image = track_info['album']['images'][0]['url']
+    else:
+        image =  None
+    return artist, preview_url, release_date, album, track_no,total_tracks,image,track_id
 
 def get_albums(uri):
     albums = []
@@ -136,7 +135,8 @@ def get_album_tracks(album_id):
     for track in album_tracks_info['items']:
         track_name = track['name']
         track_id = track['id']
-        track_list.append({'name': track_name, 'id': track_id})
+        artist = track["artists"][0]["name"]
+        track_list.append({'name': track_name, 'id': track_id, 'artist':artist})
     
     return track_list
 
@@ -160,7 +160,7 @@ def get_artist_albums(artist_id, type):
         list_of_albums.append(dict)
     return list_of_albums
 
-def get_album_cover_art(album_uri):
+def get_album_details(album_uri):
     # Extract album ID from the URI
     album_id = album_uri.split(':')[-1]
     
@@ -169,9 +169,17 @@ def get_album_cover_art(album_uri):
     release_date = album_info['release_date']
     total_tracks = album_info['total_tracks']
     cover_art_url = album_info['images'][0]['url']
+        # Get album tracks information
+    album_tracks_info = spotify.album_tracks(album_id)
     
-    return release_date,total_tracks,cover_art_url
-# print(get_albums("spotify:artist:4dpARuHxo51G3z768sgnrY")[0]['name'])
+    # Extract track information from each item
+    track_list = []
+    for track in album_tracks_info['items']:
+        track_name = track['name']
+        track_id = track['id']
+        track_list.append({'name': track_name, 'id': track_id})
+    
+    return release_date,total_tracks,cover_art_url,track_list
 
 def get_top_tracks(uri):
     top_tracks_data = artist_top_tracks(uri, 10)
@@ -180,12 +188,12 @@ def get_top_tracks(uri):
     tracks_data = top_tracks_data[1]
     for track in tracks_data:
         uri = track["uri"]
-        artist, preview_url, release_date, album, track_no,total_tracks = get_track_details(uri)
+        artist, preview_url, release_date, album, track_no,total_tracks,image = get_track_details(uri)
         dict = {
             "artist":artist,
             "name":track["name"],
             "preview_url": preview_url,
-            "image": get_track_image(uri),
+            "image": image,
             "release_date": release_date,
             "album": album,
             'track_no':track_no,

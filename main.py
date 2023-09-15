@@ -6,8 +6,9 @@ from spotify import *
 import requests, os
 from io import BytesIO
 import time
-from lyrics import get_lyrics
+from lyrics import extract_lyrics
 from audio import *
+from telebot import util
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
@@ -32,7 +33,7 @@ def retry_func(func):
 def add_chat_user(chat_id, fname, lname, uname):
     print(f"{fname} {lname} @{uname} accessed\nChat: {chat_id}")
 
-@retry_func
+# @retry_func
 def search(message):
     if get_details_artist(message.text) == None:
         bot.send_message(message.chat.id,
@@ -55,8 +56,8 @@ def search(message):
 
     caption = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎭Genre(s): {', '.join(genres)} \n"
     bot.send_photo(message.chat.id, photo=image, caption=caption, reply_markup=handler(name,artist_uri,list_of_albums,list_of_singles))
-@retry_func
-def done(message):
+# @retry_func
+def send_song_data(message):
     text_message = message.text
     if "," not in message.text:
         text_message = message.text + ","
@@ -66,19 +67,17 @@ def done(message):
         artist = data_list[1]
     except:
         artist = ""
-    id = get_track_id(artist, song)
-    artist, preview_url, release_date, album, track_no, total_tracks = get_track_details(id)
-    image = get_track_image(id)
+    artist, preview_url, release_date, album, track_no, total_tracks,image,id = get_track_details(artist,song)
     caption = f"👤Artist: {artist}\n🎵Song : {song.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
     send_audios_or_previews(preview_url, image, caption, song, id, artist, message.chat.id,True)
-@retry_func
+# @retry_func
 def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_id,send_photo):
     track_url = f"{base_url}{id}"
     if send_photo:
         time.sleep(1.5)
         bot.send_photo(chat_id, photo=image, caption=caption, reply_markup=lyrics_handler(artist,name))
-    update = bot.send_message(chat_id, "Finding song...")
-    track = spotify.track(track_url)
+    update = bot.send_message(chat_id, "🔽Downloading song just a sec ...🔽")
+    track = spotify.track(id)
     albumartist = [artist["name"] for artist in track["artists"]]
     album_name = track["album"]["name"]
     release_date = track["album"]["release_date"]
@@ -86,6 +85,7 @@ def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_
     title = track["name"]
     query = f"{title} {artist}"
     data = download_webm(get_yt_url(query), title)
+    bot.edit_message_text("Adding metadata😇...",chat_id,update.id)
     if data is not None:
         files = [f for f in os.listdir('.') if os.path.isfile(f) and f.endswith('.mp3')]
         set_metadata(albumartist,artist,release_date,album_name,title,track_number,image,files[0])
@@ -110,18 +110,18 @@ def get_album_songs(small_uri,chat_id, list_of_albums):
         if small_uri in album['uri'].split(":")[2]:
             album_name = album["name"]
             chosen_album = album
-    release_date, total_tracks, photo = get_album_cover_art(small_uri)
+    release_date, total_tracks, photo, track_list = get_album_details(small_uri)
     caption = f"📀 Album: {album_name}\n⭐️ Released: {release_date}\n🔢 Total Tracks: {total_tracks}"
     bot.send_photo(chat_id,photo,caption=caption)
     album_tracks = get_album_tracks(chosen_album["uri"])
     for track in album_tracks:
         name = track['name']
-        id = track['id']
-        artist, preview_url, release_date, album, track_no, total_tracks = get_track_details(id)
+        artist = track["artist"]
+        artist, preview_url, release_date, album, track_no, total_tracks,image,id = get_track_details(artist,name)
         caption = f"👤Artist: {artist}\n🔢Track : {track_no} of {total_tracks}\n🎵Song : {name}\n"
         send_audios_or_previews(preview_url, photo, caption, name, id, artist, chat_id,False)
 
-    bot.send_message(chat_id, f"Those are all the {total_tracks} tracks in {artist}'s {album_name} 💪!",reply_markup=start_markup)
+    bot.send_message(chat_id, f'Those are all the {total_tracks} track(s) of {artist}\'s in "{album_name}" 💪!',reply_markup=start_markup)
 
 
 def get_top_tracks(chat_id, uri):
@@ -133,8 +133,7 @@ def get_top_tracks(chat_id, uri):
         uri = track["uri"]
         id = track["id"]
         name = track["name"]
-        image = get_track_image(uri)
-        artist, preview_url, release_date, album, track_no, total_tracks = get_track_details(uri)
+        artist, preview_url, release_date, album, track_no, total_tracks,image,id = get_track_details(artist,name)
         dict = {
             "name": name,
             "preview_url": preview_url,
@@ -176,21 +175,28 @@ def status(message):
     bot.reply_to(message, "I am awake😏.")
 
 def send_lyrics(message):
-    bot.send_chat_action(message.chat.id, action="typing")
-    song_data = get_lyrics(message.text)
-    if song_data is None:
-        bot.send_message("Lyrics not found!")
-        return
-    cover_image = song_data["coverImage"]
-    release_date = song_data['releaseDate']
-    thumbnail = song_data["thumbnail"]
-    artist = song_data["artist"]
-    title = song_data["title"]
-    lyrics = song_data["lyrics"]
-    caption = f"👤Artist: {artist}\n🎵Song : {title}\n━━━━━━━━━━━━\n⭐️ Released: {release_date}"
-    bot.send_photo(message.chat.id, photo=cover_image, caption=caption)
-    bot.send_message(message.chat.id, f"\n🎼Lyrics:\n{lyrics}")
-    bot.send_message(message.chat.id, lyrics)
+    send_song_data(message)
+    text_message = message.text
+    if "," not in message.text:
+        text_message = message.text + ","
+    data_list = text_message.split(",")
+    title = data_list[0]
+    try:
+        artist = data_list[1]
+    except:
+        artist = ""
+    artist, preview_url, release_date, album, track_no,total_tracks,image,id = get_track_details(artist,title)
+    lyrics = extract_lyrics.get_lyrics(f"{title} {artist}")["lyrics"]
+    caption = f"👤Artist: {artist}\n🎵Song : {title.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}\n\n🎶Lyrics:\n{lyrics}"
+    try:
+        bot.send_message(message.chat.id, text=caption)
+    except:
+        splitted_text = util.smart_split(caption, chars_per_string=3000)
+        for text in splitted_text:
+            bot.send_message(message.chat.id, text=text)
+
+
+
 @bot.message_handler(commands=['lyrics'])
 def handle_lyrics(message):
     bot.send_message(message.chat.id, "Awesome, send me the name of the song with the artist separated by a comma")
@@ -220,8 +226,7 @@ def topsongs(message):
         song = titles[index]
 
         return
-        artist, preview_url, release_date, album, track_no, total_tracks = get_track_details(id)
-        image = get_track_image(id)
+        artist, preview_url, release_date, album, track_no, total_tracks,image = get_track_details(id)
         caption = f"👤Artist: {artist}\n🎵Song : {song}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
         send_audios_or_previews(preview_url, image, caption, song, id, artist, message.chat.id,True)
     bot.send_message(message.chat.id, f"Those are the top 🔝 {no_of_songs} biggest hits of this week 💪!",
@@ -231,7 +236,7 @@ def topsongs(message):
 @bot.message_handler(commands=["song"])
 def get_song(message):
     bot.send_message(message.chat.id, "Awesome, send the name of the song with the artist separated by a comma", reply_markup=force_markup)
-    bot.register_next_step_handler_by_chat_id(message.chat.id, lambda message: done(message))
+    bot.register_next_step_handler_by_chat_id(message.chat.id, lambda message: send_song_data(message))
 
 
 
@@ -263,11 +268,16 @@ def handle_query(call):
     elif call.data.startswith("lyrics_"):
         title = call.data.split("_")[1]
         artist = call.data.split("_")[2]
-        song_data = get_lyrics(f"{title} {artist}")
-        date = song_data["releaseDate"]
-        lyrics = song_data["lyrics"]
-        caption = f"👤Artist: {artist}\n🎵Song : {title}\n━━━━━━━━━━━━\n⭐️ Released: {date}\n\n🎶Lyrics:\n\n{lyrics}"
-        bot.send_message(call.message.chat.id, text=caption)
+        artist, preview_url, release_date, album, track_no,total_tracks,image,id = get_track_details(artist,title)
+        lyrics = extract_lyrics.get_lyrics(f"{title} {artist}")["lyrics"]
+        caption = f"👤Artist: {artist}\n🎵Song : {title.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}\n\n🎶Lyrics:\n{lyrics}"
+        try:
+            bot.send_message(call.message.chat.id, text=caption)
+        except:
+            splitted_text = util.smart_split(caption, chars_per_string=3000)
+            for text in splitted_text:
+                bot.send_message(call.message.chat.id, text=text)
+        
     else:
         split_data = call.data.split('_')
         if len(split_data) >= 3:
