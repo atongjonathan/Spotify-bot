@@ -6,3 +6,4 @@ SafoneAPI
 mutagen
 pytube
 moviepy
+yt-dlp
