@@ -101,7 +101,6 @@ def get_my_saved_tracks():
 
 def get_track_details(artist:str,track:str):
     data = spotify.search(q=f"artist: '{artist}' track:'{track}'", type="track")
-    print(data)
     songs = data["tracks"]["items"]
     chosen_song = songs[0]
     track_id = chosen_song["id"]

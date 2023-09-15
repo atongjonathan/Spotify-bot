@@ -14,6 +14,7 @@ TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
 base_url = "https://open.spotify.com/track/"
 MAX_RETRIES = 5
+keyboards_list = []
 def retry_func(func):
     def wrapper(*args, **kwargs):
         retries = 0
@@ -55,6 +56,7 @@ def search(message):
         album_names.append(str(index + 1) + '. ' + str(dict['name']) + "\n")
 
     caption = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎭Genre(s): {', '.join(genres)} \n"
+    full_board = handler(name,artist_uri,list_of_albums,list_of_singles)
     bot.send_photo(message.chat.id, photo=image, caption=caption, reply_markup=handler(name,artist_uri,list_of_albums,list_of_singles))
 # @retry_func
 def send_song_data(message):
@@ -76,7 +78,7 @@ def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_
     if send_photo:
         time.sleep(1.5)
         bot.send_photo(chat_id, photo=image, caption=caption, reply_markup=lyrics_handler(artist,name))
-    update = bot.send_message(chat_id, "🔽Downloading song just a sec ...🔽")
+    update = bot.send_message(chat_id, "... Downloading song just a sec ...")
     track = spotify.track(id)
     albumartist = [artist["name"] for artist in track["artists"]]
     album_name = track["album"]["name"]
@@ -84,7 +86,7 @@ def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_
     track_number = str(track["track_number"])
     title = track["name"]
     query = f"{title} {artist}"
-    data = download_webm(get_yt_url(query), title)
+    data = download_webm(get_yt_url(f"{query}"), title)
     bot.edit_message_text("Adding metadata😇...",chat_id,update.id)
     if data is not None:
         files = [f for f in os.listdir('.') if os.path.isfile(f) and f.endswith('.mp3')]
@@ -92,7 +94,7 @@ def send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_
         path = files[0]
         with open(path, "rb") as file:
             bot.send_chat_action(chat_id, "upload_audio")
-            bot.send_audio(chat_id, audio=file, title=f'{title}', performer=artist, reply_markup=start_markup)
+            bot.send_audio(chat_id, audio=file, title=f'{title}', performer=artist, reply_markup=start_markup, caption="@JonaAtong")
         os.remove(path)
     elif preview_url is None :
         bot.send_message(chat_id, text=f"{track_url}")
@@ -121,7 +123,7 @@ def get_album_songs(small_uri,chat_id, list_of_albums):
         caption = f"👤Artist: {artist}\n🔢Track : {track_no} of {total_tracks}\n🎵Song : {name}\n"
         send_audios_or_previews(preview_url, photo, caption, name, id, artist, chat_id,False)
 
-    bot.send_message(chat_id, f'Those are all the {total_tracks} track(s) of {artist}\'s in "{album_name}" 💪!',reply_markup=start_markup)
+    bot.send_message(chat_id, f'Those are all the {total_tracks} track(s) by {artist} in "{album_name}" 💪!',reply_markup=start_markup)
 
 
 def get_top_tracks(chat_id, uri):
@@ -133,6 +135,7 @@ def get_top_tracks(chat_id, uri):
         uri = track["uri"]
         id = track["id"]
         name = track["name"]
+        artist = track["artists"][0]["name"]
         artist, preview_url, release_date, album, track_no, total_tracks,image,id = get_track_details(artist,name)
         dict = {
             "name": name,
@@ -146,14 +149,16 @@ def get_top_tracks(chat_id, uri):
         track_details.append(dict)
         caption = f"👤 Artist : {artist}\n🎵 Song : {name}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢 Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
         send_audios_or_previews(preview_url, image, caption, name, id, artist, chat_id,True)
-    bot.send_message(chat_id, f"Those are {artist}'s top 🔝 {no_of_songs} top tracks 💪!", reply_markup=start_markup)
+    bot.send_message(chat_id, f"Those are {artist}'s top 🔝 {no_of_songs} tracks 💪!", reply_markup=start_markup)
 
 
 
 
 def send_checker(artist_id ,type, list_of_type, chat_id):
-    bot.send_message(chat_id, "Awesome which ones tracks do you want to get?",
+    make = bot.send_message(chat_id, "Awesome which ones tracks do you want to get?",
                      reply_markup=make_for_type(artist_id,type,list_of_type))
+    make_dict = {"name": 'make',"keyboard": make}
+    keyboards_list.append(make_dict)
 
 
 @bot.message_handler(commands=['start'])
@@ -277,7 +282,15 @@ def handle_query(call):
             splitted_text = util.smart_split(caption, chars_per_string=3000)
             for text in splitted_text:
                 bot.send_message(call.message.chat.id, text=text)
-        
+    elif call.data.startswith("close"):
+        off = call.data.split("_")[1]
+        if off == "make":
+            for board in keyboards_list:
+                if board["name"] == 'make':
+                    keyboards_list.remove(board)
+                    bot.delete_message(call.message.chat.id,board["keyboard"].id)            
+                if board["name"] == 'handler':
+                    bot.delete_message(call.message.chat.id,board["keyboard"].id)            
     else:
         split_data = call.data.split('_')
         if len(split_data) >= 3:

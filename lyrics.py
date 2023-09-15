@@ -24,9 +24,4 @@ def get_lyrics(query):
     os.remove("lyrics.txt")
     return data
 
-# print(GCS_API_KEY,GCS_ENGINE_ID)
 extract_lyrics = SongLyrics(GCS_API_KEY, GCS_ENGINE_ID)
-# data = extract_lyrics.get_lyrics("Wakadinali")
-# print(data)
-# print(extract_lyrics("Single Sooon Selena Gomez"))
-# print(get_lyrics("It ain't me"))

@@ -12,6 +12,8 @@ def make_for_type (artist_id, type, list_of_type):
         data = f"{small_id}_{type}_{small_uri}"
         button = types.InlineKeyboardButton(album_name, callback_data=data)
         answers_keyboard.add(button)
+    close = types.InlineKeyboardButton("Close", callback_data='close_make')
+    answers_keyboard.add(close)
     return answers_keyboard
 def lyrics_handler(artist,title):
     handler_markup = types.InlineKeyboardMarkup()
@@ -30,7 +32,7 @@ def handler(name,artist_uri, list_of_albums,list_of_singles):
     if len(list_of_singles)>0:
         data = f'single_{artist_uri}'
         single_list_button = types.InlineKeyboardButton(f"View {name}'s Singles or EPs🧐", callback_data=data)
-        markup.add(single_list_button)    
+        markup.add(single_list_button)
     return markup
 def create_keyboard(all_answers):
     answers_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -38,6 +40,8 @@ def create_keyboard(all_answers):
     for answer in all_answers:
         button = types.KeyboardButton(html.unescape(answer))
         answers_keyboard.add(button)
+    close = types.InlineKeyboardButton("Close", callback_data='close_handler')
+    answers_keyboard.add(close)
     return answers_keyboard
 
 hide_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)

@@ -27,7 +27,7 @@ def get_yt_url(query):
     for url in (search_results[:5]):
         yt_base = f"https://www.youtube.com/watch?v={url}"
         yt = YouTube(yt_base)
-        if yt.length < 100:
+        if yt.length < 100 or yt.length > 300:
             pass
         else:
             best_uri = url    
@@ -44,15 +44,17 @@ def download_webm(vid_url, title):
     mp4_no_frame.write_audiofile(audio_file, logger=None)
     mp4_no_frame.close()
     os.remove(audio)
-    os.replace(audio_file, f"{title}.mp3")
+    # Define a regular expression pattern to match non-English letters
+    non_english_pattern = re.compile(r'[\/\\\:\*\?\"\<\>\|]')
+    # Replace non-English letters with an empty string
+    new_title = non_english_pattern.sub('', title)
+    os.replace(audio_file, f"{new_title}.mp3")
     audio_file = f"{title}.mp3"
     return audio_file
 
-def set_metadata(albumartist,artist,album,title,date,tracknumber,photo,file_path):
+def set_metadata(albumartist,artist,date,album,title,tracknumber,photo,file_path):
     """adds metadata to the downloaded mp3 file"""
-
     mp3file = EasyID3(file_path)
-
     # add metadata
     mp3file["albumartist"] = albumartist
     mp3file["artist"] = artist
@@ -60,7 +62,6 @@ def set_metadata(albumartist,artist,album,title,date,tracknumber,photo,file_path
     mp3file["title"] = title
     mp3file["date"] = date
     mp3file["tracknumber"] = str(tracknumber)
-    mp3file["tracknumber"] = "@JonaAtong"
     mp3file.save()
 
     # add album cover
