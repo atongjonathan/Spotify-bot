@@ -1,13 +1,14 @@
 import spotipy
 from spotipy import SpotifyClientCredentials
 from spotipy.oauth2 import SpotifyOAuth
-# from top_songs import get_data
-import os
-
+from config import SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET
+import json
+import logging
+logger = logging.getLogger(__name__)
 class Spotify():
     def __init__(self) -> None:
-        self.SPOTIPY_CLIENT_ID  = os.getenv('SPOTIPY_CLIENT_ID')
-        self.SPOTIPY_CLIENT_SECRET  = os.getenv('SPOTIPY_CLIENT_SECRET')
+        self.SPOTIPY_CLIENT_ID  = SPOTIPY_CLIENT_ID
+        self.SPOTIPY_CLIENT_SECRET  = SPOTIPY_CLIENT_SECRET
         # # Authorization 
         self.spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
 
@@ -106,6 +107,8 @@ class Spotify():
         data = self.spotify.search(q=f"artist: '{artist}' track:'{track}'", type="track")
         songs = data["tracks"]["items"]
         chosen_song = songs[0]
+        with open("data.txt", 'w') as file:
+            file.write(json.dumps(data))
         track_id = chosen_song["id"]
         track_info = self.spotify.track(track_id)
         artist = track_info["album"]["artists"][0]["name"]
