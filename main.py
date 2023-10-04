@@ -11,7 +11,7 @@ from get_lyrics import extract_lyrics
 from config import TELEGRAM_BOT_TOKEN
 from logging import (INFO, FileHandler, StreamHandler, basicConfig,
                      error, getLogger, info, warning)
-from speed import get_speed
+# from speed import get_speed
 basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(lineno)d | %(message)s',
                     handlers=[FileHandler('Z_Logs.txt'), StreamHandler()], level=INFO)
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
@@ -276,11 +276,11 @@ def ping(message):
     
     bot.edit_message_text(f"Pong! 🏓\nResponse Time: {elapsed_time_ms} ms", message.chat.id, response.message_id)
 
-@bot.message_handler(commands=['speed'])
-def speed(message):
-    run = bot.send_message(message.chat.id, "Running speedtest ...")
-    text = get_speed()
-    bot.edit_message_text(text,message.chat.id, run.message_id)
+# @bot.message_handler(commands=['speed'])
+# def speed(message):
+#     run = bot.send_message(message.chat.id, "Running speedtest ...")
+#     text = get_speed()
+#     bot.edit_message_text(text,message.chat.id, run.message_id)
 @bot.message_handler(commands=["song"])
 def get_song(message):
     bot.send_message(message.chat.id, "Awesome, send the name of the song with the artist separated by a comma",

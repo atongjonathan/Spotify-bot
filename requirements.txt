@@ -6,4 +6,3 @@ mutagen
 pytube
 moviepy
 lyrics_extractor
-speedtest
