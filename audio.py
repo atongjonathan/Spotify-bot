@@ -5,19 +5,20 @@ from mutagen.easyid3 import EasyID3
 from mutagen.id3 import APIC, ID3, USLT
 from moviepy.editor import AudioFileClip
 import urllib.request
-import yt_dlp
+
+# import yt_dlp
 
 class Audio():
-    def __init__(self) -> None:
-        ydl_opts = {
-            'format': 'bestaudio/best',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',  # Set the preferred quality to 320 kbps
-            }],
-        }
-        self.ytdl = yt_dlp.YoutubeDL(ydl_opts)
+    # def __init__(self) -> None:
+        # ydl_opts = {
+        #     'format': 'bestaudio/best',
+        #     'postprocessors': [{
+        #         'key': 'FFmpegExtractAudio',
+        #         'preferredcodec': 'mp3',
+        #         'preferredquality': '192',  # Set the preferred quality to 320 kbps
+        #     }],
+        # }
+        # self.ytdl = yt_dlp.YoutubeDL(ydl_opts)
 
 
     def download_webm(self,query,title):

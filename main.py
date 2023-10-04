@@ -9,14 +9,16 @@ from spotify import Spotify
 from keyboards import Keyboard
 from get_lyrics import extract_lyrics
 from config import TELEGRAM_BOT_TOKEN
-import logging
+from logging import (INFO, FileHandler, StreamHandler, basicConfig,
+                     error, getLogger, info, warning)
 from speed import get_speed
-
+basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(lineno)d | %(message)s',
+                    handlers=[FileHandler('Z_Logs.txt'), StreamHandler()], level=INFO)
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
 base_url = "https://open.spotify.com/track/"
 MAX_RETRIES = 5
 keyboards_list = []
-logger = logging.getLogger(__name__)
+logger = getLogger(__name__)
 
 
 spotify = Spotify()
@@ -31,11 +33,11 @@ def retry_func(func):
             try:
                 return func(*args, **kwargs)
             except ConnectionError as e:
-                logging.exception(f"Error {retries},{e} \n Retrying...")
+                error(f"Error {retries},{e} \n Retrying...")
             except Exception as e:
                 logger.error(f"Another exception occurred, {e}")
             retries += 1
-        logger.info("Max Retries reached")
+        info("Max Retries reached")
         return None
     return wrapper
 
@@ -43,7 +45,7 @@ def retry_func(func):
 
 
 def add_chat_user(chat_id, fname, lname, uname):
-    print(f"{fname} {lname} @{uname} accessed\nChat: {chat_id}")
+    logger.info(f"{fname} {lname} @{uname} accessed\nChat: {chat_id}")
 
 @retry_func
 def search_artist(message):
@@ -94,13 +96,15 @@ def send_audios_or_previews(
     track_url = f"{base_url}{id}"
     if send_photo:
         time.sleep(1.5)
-        bot.send_photo(chat_id, photo=image, caption=caption,
-                       reply_markup=keyboard.lyrics_handler(artist, name))
+        to_handle = bot.send_photo(chat_id, photo=image, caption=caption)
+        reply_markup = keyboard.lyrics_handler(artist, name)
+        bot.edit_message_reply_markup(chat_id,to_handle.message_id,reply_markup=reply_markup)
     update = bot.send_message(chat_id, "... Downloading song just a sec ...")
     artist, preview_url, release_date, album, track_no, total_tracks, image, track_id = spotify.get_track_details(
         artist, name)
-    query = f"{name} {artist}"
-    data = audio.download_webm(f"{query}", name)
+    data = None
+    # query = f"{name} {artist}"
+    # data = audio.download_webm(f"{query}", name)
     bot.edit_message_text("Adding metadata😇...", chat_id, update.id)
     if data is not None:
         files = [f for f in os.listdir(
@@ -220,13 +224,13 @@ def send_lyrics(message):
     artist, preview_url, release_date, album, track_no, total_tracks, image, id = spotify.get_track_details(
         artist, title)
     lyrics = extract_lyrics.get_lyrics(f"{title} {artist}")["lyrics"]
-    caption = f"👤Artist: {artist}\n🎵Song : {title.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}\n\n🎶Lyrics:\n{lyrics}"
+    caption = f"👤Artist: {artist}\n🎵Song : {title.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}\n\n🎶Lyrics:\n`{lyrics}`"
     try:
-        bot.send_message(message.chat.id, text=caption)
+        bot.send_message(message.chat.id, text=caption, parse_mode='markdown')
     except BaseException:
         splitted_text = util.smart_split(caption, chars_per_string=3000)
         for text in splitted_text:
-            bot.send_message(message.chat.id, text=text)
+            bot.send_message(message.chat.id, text=text, parse_mode='markdown')
 
 
 @bot.message_handler(commands=['lyrics'])
@@ -243,6 +247,10 @@ def artist(message):
                      reply_markup=keyboard.force_markup)
     bot.register_next_step_handler_by_chat_id(
         message.chat.id, lambda msg: search_artist(msg))
+
+@bot.message_handler(commands=['log'])
+def get_logs(message):
+    bot.send_document(message.chat.id, 'Z_logs.txt')
 
 
 # @bot.message_handler(commands=['topsongs'])
@@ -314,13 +322,13 @@ def handle_query(call):
         artist, preview_url, release_date, album, track_no, total_tracks, image, id = spotify.get_track_details(
             artist, title)
         lyrics = extract_lyrics.get_lyrics(f"{title} {artist}")["lyrics"]
-        caption = f"👤Artist: {artist}\n🎵Song : {title.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}\n\n🎶Lyrics:\n{lyrics}"
+        caption = f"👤Artist: {artist}\n🎵Song : {title.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}\n\n🎶Lyrics:\n```{lyrics}```"
         try:
-            bot.send_message(call.message.chat.id, text=caption)
+            bot.send_message(call.message.chat.id, text=caption, parse_mode='markdown')
         except BaseException:
-            splitted_text = util.smart_split(caption, chars_per_string=3000)
+            splitted_text = util.smart_split(caption, chars_per_string=3000,)
             for text in splitted_text:
-                bot.send_message(call.message.chat.id, text=text)
+                bot.send_message(call.message.chat.id, text=text, parse_mode='markdown')
     elif call.data.startswith("close"):
         off = call.data.split("_")[1]
         if off == "make":
