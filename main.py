@@ -250,7 +250,8 @@ def artist(message):
 
 @bot.message_handler(commands=['log'])
 def get_logs(message):
-    bot.send_document(message.chat.id, 'Z_logs.txt')
+    with open('Z_logs.txt') as file:
+        bot.send_document(message.chat.id, file)
 
 
 # @bot.message_handler(commands=['topsongs'])
