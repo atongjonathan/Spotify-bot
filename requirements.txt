@@ -2,8 +2,6 @@ telebot
 requests
 beautifulsoup4
 spotipy
-SafoneAPI
 mutagen
 pytube
 moviepy
-yt-dlp
