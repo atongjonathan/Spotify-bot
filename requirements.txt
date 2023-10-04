@@ -5,3 +5,4 @@ spotipy
 mutagen
 pytube
 moviepy
+lyrics_extractor
