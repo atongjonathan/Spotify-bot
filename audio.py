@@ -2,25 +2,10 @@ from pytube import YouTube
 import os
 import re
 from mutagen.easyid3 import EasyID3
-from mutagen.id3 import APIC, ID3, USLT
-from moviepy.editor import AudioFileClip
+from mutagen.id3 import APIC, ID3
 import urllib.request
 
-# import yt_dlp
-
 class Audio():
-    # def __init__(self) -> None:
-        # ydl_opts = {
-        #     'format': 'bestaudio/best',
-        #     'postprocessors': [{
-        #         'key': 'FFmpegExtractAudio',
-        #         'preferredcodec': 'mp3',
-        #         'preferredquality': '192',  # Set the preferred quality to 320 kbps
-        #     }],
-        # }
-        # self.ytdl = yt_dlp.YoutubeDL(ydl_opts)
-
-
     def download_webm(self,query,title):
         # Define a regular expression pattern to match non-English letters
         non_english_pattern = re.compile(r'[^\x00-\x7F]+')
@@ -40,7 +25,6 @@ class Audio():
             else:
                 best_uri = url
         vid_url = best_uri 
-        self.ytdl.download([vid_url])
         for file in os.listdir("."):
             if os.path.isfile(file) and file.endswith(".mp3"):
                 return file

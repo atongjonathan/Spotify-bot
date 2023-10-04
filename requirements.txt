@@ -1,6 +1,6 @@
-telebot==0.0.5   
-requests==2.28.2
-beautifulsoup4==4.9.3
+telebot
+requests
+beautifulsoup4
 spotipy
 SafoneAPI
 mutagen
