@@ -127,7 +127,7 @@ def send_audios_or_previews(
                            reply_markup=keyboard.start_markup, caption="@JonaAtong")
         os.remove(path)
     elif preview_url is None:
-        bot.send_message(chat_id, "Song Not found")
+        pass
     else:
         response = requests.get(preview_url)
         audio_content = response.content

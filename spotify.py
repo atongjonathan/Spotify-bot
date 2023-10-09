@@ -113,33 +113,35 @@ class Spotify():
         except:
             genius = Genius()
             chosen_song = genius.search_song(track, artist)
-            print(chosen_song)
-            artist = chosen_song.artist
-            track_name = chosen_song.full_title
-            album = track_name
-            release_date = None
-            total_tracks = 1
-            track_no = 1
-            preview_url = None
-            image = chosen_song.header_image_url
-            track_id = chosen_song.url
+            if chosen_song == None:
+                pass
+            else:
+                artist = chosen_song.artist
+                track_name = chosen_song.full_title
+                album = track_name
+                release_date = None
+                total_tracks = 1
+                track_no = 1
+                preview_url = None
+                image = chosen_song.header_image_url
+                track_id = chosen_song.url
+                return artist, preview_url, release_date, album, track_no,total_tracks,image,track_id,track_name
+            track_id = chosen_song["id"]
+            track_info = self.spotify.track(track_id)
+            artist = track_info["album"]["artists"][0]["name"]
+            track_name = track_info["name"]
+            album = track_info["album"]["name"]
+            release_date = track_info["album"]["release_date"]
+            total_tracks = track_info["album"]["total_tracks"]
+            track_no = track_info["track_number"]
+            uri = track_info["uri"]
+            preview_url = track_info["preview_url"]
+                # Get the cover art URL
+            if track_info.get('album') and track_info['album'].get('images'):
+                image = track_info['album']['images'][0]['url']
+            else:
+                image =  None
             return artist, preview_url, release_date, album, track_no,total_tracks,image,track_id,track_name
-        track_id = chosen_song["id"]
-        track_info = self.spotify.track(track_id)
-        artist = track_info["album"]["artists"][0]["name"]
-        track_name = track_info["name"]
-        album = track_info["album"]["name"]
-        release_date = track_info["album"]["release_date"]
-        total_tracks = track_info["album"]["total_tracks"]
-        track_no = track_info["track_number"]
-        uri = track_info["uri"]
-        preview_url = track_info["preview_url"]
-            # Get the cover art URL
-        if track_info.get('album') and track_info['album'].get('images'):
-            image = track_info['album']['images'][0]['url']
-        else:
-            image =  None
-        return artist, preview_url, release_date, album, track_no,total_tracks,image,track_id,track_name
 
     def get_albums(self,uri):
         albums = []
