@@ -4,6 +4,7 @@ from spotipy.oauth2 import SpotifyOAuth
 from config import SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET
 import json
 import logging
+from get_lyrics import Genius
 logger = logging.getLogger(__name__)
 class Spotify():
     def __init__(self) -> None:
@@ -106,9 +107,23 @@ class Spotify():
     def get_track_details(self,artist:str,track:str):
         data = self.spotify.search(q=f"artist: '{artist}' track:'{track}'", type="track")
         songs = data["tracks"]["items"]
-        chosen_song = songs[0]
-        with open("data.txt", 'w') as file:
-            file.write(json.dumps(data))
+        try:
+            chosen_song = songs[0]
+
+        except:
+            genius = Genius()
+            chosen_song = genius.search_song(track, artist)
+            print(chosen_song)
+            artist = chosen_song.artist
+            track_name = chosen_song.full_title
+            album = track_name
+            release_date = None
+            total_tracks = 1
+            track_no = 1
+            preview_url = None
+            image = chosen_song.header_image_url
+            track_id = chosen_song.url
+            return artist, preview_url, release_date, album, track_no,total_tracks,image,track_id,track_name
         track_id = chosen_song["id"]
         track_info = self.spotify.track(track_id)
         artist = track_info["album"]["artists"][0]["name"]
@@ -124,7 +139,7 @@ class Spotify():
             image = track_info['album']['images'][0]['url']
         else:
             image =  None
-        return artist, preview_url, release_date, album, track_no,total_tracks,image,track_id
+        return artist, preview_url, release_date, album, track_no,total_tracks,image,track_id,track_name
 
     def get_albums(self,uri):
         albums = []
@@ -216,4 +231,3 @@ class Spotify():
                 eps.append(album["name"])
 
         return eps
-

@@ -7,13 +7,13 @@ from telebot import util
 from audio import Audio
 from spotify import Spotify
 from keyboards import Keyboard
-from get_lyrics import extract_lyrics
+from get_lyrics import get_lyrics_genius
 from config import TELEGRAM_BOT_TOKEN
 from logging import (INFO, FileHandler, StreamHandler, basicConfig,
                      error, getLogger, info, warning)
 # from speed import get_speed
 basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(lineno)d | %(message)s',
-                    handlers=[FileHandler('Z_Logs.txt'), StreamHandler()], level=INFO)
+                    handlers=[FileHandler('logs.txt'), StreamHandler()], level=INFO)
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN))
 base_url = "https://open.spotify.com/track/"
 MAX_RETRIES = 5
@@ -35,9 +35,11 @@ def retry_func(func):
             except ConnectionError as e:
                 error(f"Error {retries},{e} \n Retrying...")
             except Exception as e:
-                logger.error(f"Another exception occurred, {e}")
+                pass
+                exception = e
+                # logger.error(f"Another exception occurred, {e}")
             retries += 1
-        info("Max Retries reached")
+        info(f"Max Retries reached for error {e}")
         return None
     return wrapper
 
@@ -45,9 +47,9 @@ def retry_func(func):
 
 
 def add_chat_user(chat_id, fname, lname, uname):
-    logger.info(f"{fname} {lname} @{uname} accessed\nChat: {chat_id}")
+    logger.info(f"{fname} {lname} accessed Username: @{uname} Chat ID: {chat_id}")
 
-@retry_func
+# retry_func
 def search_artist(message):
     if spotify.get_details_artist(message.text) is None:
         bot.send_message(message.chat.id,
@@ -74,7 +76,7 @@ def search_artist(message):
     pin = bot.send_photo(message.chat.id, photo=image, caption=caption, reply_markup=keyboard.view_handler(
         name, artist_uri, list_of_albums, list_of_singles))
     bot.pin_chat_message(message.chat.id, pin.id)
-@retry_func
+# retry_func
 def send_song_data(message):
     text_message = message.text
     if "," not in message.text:
@@ -85,22 +87,28 @@ def send_song_data(message):
         artist = data_list[1]
     except BaseException:
         artist = ""
-    artist, preview_url, release_date, album, track_no, total_tracks, image, id = spotify.get_track_details(
+    artist, preview_url, release_date, album, track_no, total_tracks, image, id, track_name = spotify.get_track_details(
         artist, song)
-    caption = f"👤Artist: {artist}\n🎵Song : {song.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
+    caption = f"👤Artist: {artist}\n🎵Song : {track_name}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
     send_audios_or_previews(preview_url, image, caption,
-                            song, id, artist, message.chat.id, True)
-@retry_func
+                            track_name, id, artist, message.chat.id, True)
+# retry_func
 def send_audios_or_previews(
         preview_url, image, caption, name, id, artist, chat_id, send_photo):
-    track_url = f"{base_url}{id}"
+    # if id.startswith("http"):
+    #     track_url = id
+    # else:
+    #     track_url = f"{base_url}{id}"
     if send_photo:
         time.sleep(1.5)
-        to_handle = bot.send_photo(chat_id, photo=image, caption=caption)
         reply_markup = keyboard.lyrics_handler(artist, name)
-        bot.edit_message_reply_markup(chat_id,to_handle.message_id,reply_markup=reply_markup)
+        try:
+            bot.send_photo(chat_id, photo=image, caption=caption, reply_markup=reply_markup)
+        except:
+            pass
+        # bot.edit_message_reply_markup(chat_id,to_handle.message_id,reply_markup=None)
     update = bot.send_message(chat_id, "... Downloading song just a sec ...")
-    artist, preview_url, release_date, album, track_no, total_tracks, image, track_id = spotify.get_track_details(
+    artist, preview_url, release_date, album, track_no, total_tracks, image, track_id, track_name = spotify.get_track_details(
         artist, name)
     data = None
     # query = f"{name} {artist}"
@@ -119,7 +127,7 @@ def send_audios_or_previews(
                            reply_markup=keyboard.start_markup, caption="@JonaAtong")
         os.remove(path)
     elif preview_url is None:
-        bot.send_message(chat_id, text=f"{track_url}")
+        bot.send_message(chat_id, "Song Not found")
     else:
         response = requests.get(preview_url)
         audio_content = response.content
@@ -143,7 +151,7 @@ def get_album_songs(small_uri, chat_id, list_of_albums):
     for track in album_tracks:
         name = track['name']
         artist = track["artist"]
-        artist, preview_url, release_date, album, track_no, total_tracks, image, id = spotify.get_track_details(
+        artist, preview_url, release_date, album, track_no, total_tracks, image, id, track_name = spotify.get_track_details(
             artist, name)
         caption = f"👤Artist: {artist}\n🔢Track : {track_no} of {total_tracks}\n🎵Song : {name}\n"
         send_audios_or_previews(
@@ -163,7 +171,7 @@ def get_top_tracks(chat_id, uri):
         id = track["id"]
         name = track["name"]
         artist = track["artists"][0]["name"]
-        artist, preview_url, release_date, album, track_no, total_tracks, image, id = spotify.get_track_details(
+        artist, preview_url, release_date, album, track_no, total_tracks, image, id, track_name = spotify.get_track_details(
             artist, name)
         dict = {
             "name": name,
@@ -200,14 +208,14 @@ def welcome(message):
 
 @bot.message_handler(commands=['commands'])
 def info(message):
-    bot.reply_to(
-        message, "/start - Starts the bot\n/song - Search for a song\n/artist - Search for an artist\n/lyrics - Get lyrics of a song")
+    text = "/start - Starts the bot\n/song - Search for a song\n/artist - Search for an artist\n/lyrics - Get lyrics of a song"
+    bot.reply_to(message,text)
 # /topsongs - Get top 10 tracks in the world")
 
 
 @bot.message_handler(commands=['status'])
-def status(message):
-    bot.reply_to(message, "I am awake😏.")
+def status(msg):
+    bot.reply_to(msg, "I am awake😏.")
 
 
 def send_lyrics(message):
@@ -221,9 +229,9 @@ def send_lyrics(message):
         artist = data_list[1]
     except BaseException:
         artist = ""
-    artist, preview_url, release_date, album, track_no, total_tracks, image, id = spotify.get_track_details(
+    artist, preview_url, release_date, album, track_no, total_tracks, image, id, track_name = spotify.get_track_details(
         artist, title)
-    lyrics = extract_lyrics.get_lyrics(f"{title} {artist}")["lyrics"]
+    lyrics = get_lyrics_genius(artist,title)
     caption = f"👤Artist: {artist}\n🎵Song : {title.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}\n\n🎶Lyrics:\n`{lyrics}`"
     try:
         bot.send_message(message.chat.id, text=caption, parse_mode='markdown')
@@ -248,9 +256,9 @@ def artist(message):
     bot.register_next_step_handler_by_chat_id(
         message.chat.id, lambda msg: search_artist(msg))
 
-@bot.message_handler(commands=['log'])
+@bot.message_handler(commands=['logs'])
 def get_logs(message):
-    with open('Z_logs.txt') as file:
+    with open('logs.txt') as file:
         bot.send_document(message.chat.id, file)
 
 
@@ -320,16 +328,18 @@ def handle_query(call):
     elif call.data.startswith("lyrics_"):
         title = call.data.split("_")[1]
         artist = call.data.split("_")[2]
-        artist, preview_url, release_date, album, track_no, total_tracks, image, id = spotify.get_track_details(
+        artist, preview_url, release_date, album, track_no, total_tracks, image, id, track_name = spotify.get_track_details(
             artist, title)
-        lyrics = extract_lyrics.get_lyrics(f"{title} {artist}")["lyrics"]
+        lyrics = get_lyrics_genius(artist,title)
         caption = f"👤Artist: {artist}\n🎵Song : {title.title()}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}\n\n🎶Lyrics:\n```{lyrics}```"
         try:
-            bot.send_message(call.message.chat.id, text=caption, parse_mode='markdown')
+            splitted_text = util.smart_split(caption, chars_per_string=3000)
+            for text in splitted_text:
+                bot.send_message(call.message.chat.id, text=text, parse_mode='markdown')
         except BaseException:
             splitted_text = util.smart_split(caption, chars_per_string=3000,)
             for text in splitted_text:
-                bot.send_message(call.message.chat.id, text=text, parse_mode='markdown')
+                bot.send_message(call.message.chat.id, text=text.encode('utf-8'), parse_mode='markdown')
     elif call.data.startswith("close"):
         off = call.data.split("_")[1]
         if off == "make":
@@ -351,5 +361,5 @@ def handle_query(call):
             get_album_songs(small_uri, call.message.chat.id, list_of_type)
 
 if __name__ == '__main__':
-    print("Bot is running 👌")
+    logger.info("Bot is running ..")
     bot.polling()

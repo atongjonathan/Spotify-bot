@@ -26,16 +26,17 @@ class Keyboard():
             small_uri = album['uri'].split(':')[2]
             data = f"{small_id}_{type}_{small_uri}"
             button = types.InlineKeyboardButton(album_name, callback_data=data)
-            self.list_of_keyboard.add(button)
+            self.list_of_keyboard.row(button)
         close = types.InlineKeyboardButton("Close", callback_data='close_make')
         self.list_of_keyboard.add(close)
         return self.list_of_keyboard
 
 
     def lyrics_handler(self,artist,title):
-        lyrics_button = types.InlineKeyboardButton(text="Get Lyrics", callback_data=f"lyrics_{title}_{artist}")
-        self.lyrics_keyboard.add(lyrics_button)
-        return self.lyrics_keyboard
+        lyrics_keyboard = types.InlineKeyboardMarkup()
+        lyrics_button = types.InlineKeyboardButton(text=f"{title} lyrics", callback_data=f"lyrics_{title}_{artist}")
+        lyrics_keyboard.add(lyrics_button)
+        return lyrics_keyboard
 
 
     def view_handler(self,name,artist_uri, list_of_albums,list_of_singles):
