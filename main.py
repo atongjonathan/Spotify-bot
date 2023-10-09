@@ -49,7 +49,7 @@ def retry_func(func):
 def add_chat_user(chat_id, fname, lname, uname):
     logger.info(f"{fname} {lname} accessed Username: @{uname} Chat ID: {chat_id}")
 
-# retry_func
+@retry_func
 def search_artist(message):
     if spotify.get_details_artist(message.text) is None:
         bot.send_message(message.chat.id,
@@ -76,7 +76,7 @@ def search_artist(message):
     pin = bot.send_photo(message.chat.id, photo=image, caption=caption, reply_markup=keyboard.view_handler(
         name, artist_uri, list_of_albums, list_of_singles))
     bot.pin_chat_message(message.chat.id, pin.id)
-# retry_func
+@retry_func
 def send_song_data(message):
     text_message = message.text
     if "," not in message.text:
@@ -92,7 +92,7 @@ def send_song_data(message):
     caption = f"👤Artist: {artist}\n🎵Song : {track_name}\n━━━━━━━━━━━━\n📀Album : {album}\n🔢Track : {track_no} of {total_tracks}\n⭐️ Released: {release_date}"
     send_audios_or_previews(preview_url, image, caption,
                             track_name, id, artist, message.chat.id, True)
-# retry_func
+@retry_func
 def send_audios_or_previews(
         preview_url, image, caption, name, id, artist, chat_id, send_photo):
     # if id.startswith("http"):
