@@ -39,7 +39,7 @@ def retry_func(func):
                 exception = e
                 # logger.error(f"Another exception occurred, {e}")
             retries += 1
-        info(f"Max Retries reached for error {e}")
+        info(f"Max Retries reached for error {exception}")
         return None
     return wrapper
 
@@ -170,9 +170,13 @@ def get_top_tracks(chat_id, uri):
         uri = track["uri"]
         id = track["id"]
         name = track["name"]
+        print(name)
         artist = track["artists"][0]["name"]
-        artist, preview_url, release_date, album, track_no, total_tracks, image, id, track_name = spotify.get_track_details(
-            artist, name)
+        try:
+            artist, preview_url, release_date, album, track_no, total_tracks, image, id, track_name = spotify.get_track_details(
+            artist,name)
+        except:
+            continue
         dict = {
             "name": name,
             "preview_url": preview_url,
@@ -209,13 +213,13 @@ def welcome(message):
 @bot.message_handler(commands=['commands'])
 def info(message):
     text = "/start - Starts the bot\n/song - Search for a song\n/artist - Search for an artist\n/lyrics - Get lyrics of a song"
-    bot.reply_to(message,text)
+    bot.send_message(message.chat.id,text)
 # /topsongs - Get top 10 tracks in the world")
 
 
 @bot.message_handler(commands=['status'])
 def status(msg):
-    bot.reply_to(msg, "I am awake😏.")
+    bot.send_message(msg.chat.id, "I am awake😏.")
 
 
 def send_lyrics(message):
