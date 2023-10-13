@@ -44,9 +44,6 @@ def retry_func(func):
 # Add a new chat and user to the dictionary
 
 
-def add_chat_user(chat_id, fname, lname, uname):
-    logger.info(f"{fname} {lname} @{uname} accessed\nChat: {chat_id}")
-
 
 @retry_func
 def search_artist(message):
@@ -64,11 +61,11 @@ def search_artist(message):
     list_of_albums = spotify.get_artist_albums(artist_uri, "album")
     list_of_singles = spotify.get_artist_albums(artist_uri, "single")
     album_names = []
-    ep_names = []
-    for index, dict in enumerate(list_of_singles):
-        ep_names.append(str(index + 1) + '. ' + str(dict['name']) + "\n")
-    for index, dict in enumerate(list_of_albums):
-        album_names.append(str(index + 1) + '. ' + str(dict['name']) + "\n")
+    # ep_names = []
+    # for index, dict in enumerate(list_of_singles):
+    #     ep_names.append(str(index + 1) + '. ' + str(dict['name']) + "\n")
+    # for index, dict in enumerate(list_of_albums):
+    #     album_names.append(str(index + 1) + '. ' + str(dict['name']) + "\n")
 
     caption = f"👤Artist: {name}\n🧑Followers: {followers:,} \n🎭Genre(s): {', '.join(genres)} \n"
     # full_board = keyboard.handler(name,artist_uri,list_of_albums,list_of_singles)
@@ -199,8 +196,7 @@ def send_checker(artist_id, type, list_of_type, chat_id):
 
 @bot.message_handler(commands=['start'])
 def welcome(message):
-    add_chat_user(message.chat.id, message.from_user.first_name,
-                  message.from_user.last_name, message.from_user.username)
+    logger.info(f"{message.from_user.first_name} {message.from_user.last_name} @{message.from_user.username} accessed\nChat: {message.chat.id}")
 
     bot.send_message(message.chat.id, f"Hello {message.from_user.first_name}, Welcome to Spotify SG✨'s bot!. For help see commands?👉 /commands",
                      reply_markup=keyboard.start_markup)
