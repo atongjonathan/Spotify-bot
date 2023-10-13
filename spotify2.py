@@ -82,7 +82,9 @@ class Spotify():
         top_tracks_list = top_tracks['tracks'][:self.no_of_songs]
         artist_details['top_songs'] = [track['name'] for track in top_tracks_list]
         artist_albums = self.sp.artist_albums(artist_details['uri'], album_type='album')
+        artist_singles = self.sp.artist_albums(artist_details['uri'], album_type='single')
         artist_details['albums'] = [item["name"] for item in artist_albums['items']]
+        artist_details['singles'] = [item["name"] for item in artist_singles['items']]
         return artist_details
     
     def track(self, artist, title) -> dict:
@@ -141,7 +143,7 @@ class Spotify():
 
 # logger.info("Message")
 spotify = Spotify()
-# print((spotify.artist("Tate Mcrae")))
+print((spotify.artist("Tate Mcrae")))
 # print(spotify.track('Tate Mcrae', '10 \: 35'))
 # print(spotify.album("ELIO", "ELIO'S INFERNO"))
 # with open("data.txt", 'w') as file:

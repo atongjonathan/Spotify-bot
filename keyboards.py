@@ -38,18 +38,12 @@ class Keyboard():
         return self.lyrics_keyboard
 
 
-    def view_handler(self,name):
+    def view_handler(self,name,singles,albums):
         self.views_keyboard = types.InlineKeyboardMarkup()
         top_tracks_button = types.InlineKeyboardButton(f"{name}'s Top Tracks🔝",callback_data=f"toptracks_{name}")
-        self.views_keyboard.add(top_tracks_button)
-        # if len(list_of_albums)>0:
-        #     data = f'album_{artist_uri}'
-        #     album_list_button = types.InlineKeyboardButton(f"View {name}'s Albums🧐", callback_data=data)
-        #     self.views_keyboard.add(album_list_button)
-        # if len(list_of_singles)>0:
-        #     data = f'single_{artist_uri}'
-        #     single_list_button = types.InlineKeyboardButton(f"View {name}'s Singles or EPs🧐", callback_data=data)
-        #     self.views_keyboard.add(single_list_button)
+        singles_button = types.InlineKeyboardButton(f"View {name}'s Singles or EPs🧐",callback_data=f"singles_{name}")
+        albums_tracks_button = types.InlineKeyboardButton(f"View {name}'s Albums 🧐",callback_data=f"albums_{name}")
+        self.views_keyboard.row(top_tracks_button,singles_button,albums_tracks_button)
         return self.views_keyboard
 
         
