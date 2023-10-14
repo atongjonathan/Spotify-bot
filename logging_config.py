@@ -1,9 +1,6 @@
 import logging
+from logging import FileHandler,StreamHandler,INFO, basicConfig, getLogger
 
-logging.basicConfig(
-    filename='logs.txt',
-    level=logging.DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'  # Optional: Specify a custom date format
-
-)
+basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - line %(lineno)d | %(message)s',
+            handlers=[FileHandler('Z_Logs.txt'), StreamHandler()], level=INFO)
+logger = getLogger(__name__)

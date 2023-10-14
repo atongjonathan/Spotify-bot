@@ -2,11 +2,11 @@ import spotipy
 # from spotipy import SpotifyClientCredentials
 from spotipy.oauth2 import SpotifyOAuth
 from config import SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET
-from logging import basicConfig, getLogger, INFO, FileHandler, StreamHandler
+from logging_config import logger
+# from logging import basicConfig, getLogger, INFO, FileHandler, StreamHandler
 import json
-basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - line %(lineno)d | %(message)s',
-            handlers=[FileHandler('Z_Logs.txt'), StreamHandler()], level=INFO)
-logger = getLogger(__name__)
+# basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - line %(lineno)d | %(message)s',
+#             handlers=[FileHandler('Z_Logs.txt'), StreamHandler()], level=INFO)
    
 class Spotify():
     SPOTIPY_CLIENT_ID = SPOTIPY_CLIENT_ID
@@ -17,7 +17,6 @@ class Spotify():
     def __init__(self) -> None:
         # # Authorization 
         # self.spotify = Spotify(client_credentials_manager=SpotifyClientCredentials())
-
         self.sp = spotipy.Spotify(
                 auth_manager=SpotifyOAuth(
                 scope=self.SCOPE,
@@ -76,7 +75,7 @@ class Spotify():
                 'followers': chosen_artist["followers"]["total"],
                 'images': [item["url"] for item in images_data][0],
                 'name':chosen_artist["name"],
-                'genres': chosen_artist["genres"],
+                'genres': [genre.title() for genre in chosen_artist["genres"]],
                 }
         top_tracks = self.sp.artist_top_tracks(artist_details["uri"])
         top_tracks_list = top_tracks['tracks'][:self.no_of_songs]
@@ -89,11 +88,10 @@ class Spotify():
     
     def track(self, artist, title) -> dict:
         """Get all possible details of an track"""
-        track_data = self.sp.search(q=f"artist: '{artist}' track:'{title}'", type="track")
-        logger.info("Getting track info ...")
+        track_data = self.sp.search(q=f"{artist} {title}", type="track")
         possible_tracks = track_data["tracks"]["items"]
         if len(possible_tracks) == 0:
-            logger.info("No tracks found")
+            logger.info(f"No tracks found for {artist}, {title}")
             return
         # return json.dumps(possible_tracks[0], indent=4)
         chosen_song = possible_tracks[0]
@@ -143,8 +141,7 @@ class Spotify():
 
 # logger.info("Message")
 spotify = Spotify()
-print((spotify.artist("Tate Mcrae")))
-# print(spotify.track('Tate Mcrae', '10 \: 35'))
+# print((spotify.artist("Tate Mcrae")))
 # print(spotify.album("ELIO", "ELIO'S INFERNO"))
 # with open("data.txt", 'w') as file:
 #     file.write(spotify.album("ELIO", "ELIO'S INFERNO"))

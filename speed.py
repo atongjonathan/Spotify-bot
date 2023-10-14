@@ -1,8 +1,7 @@
 from speedtest import Speedtest
 import logging
 from Human_Format import human_readable_bytes
-
-logger = logging.getLogger(__name__)
+from logging_config import logger
 
 def get_speed():
     # imspd = await message.reply("`Running speedtest...`")
@@ -25,6 +24,5 @@ ISP: `{result["client"]["isp"]}`
 '''
     # imspd.delete()
     # await message.reply(string_speed, parse_mode="markdown")
-    logger.error("Error")
     logger.error(f'Server Speed result:-\nDL: {human_readable_bytes(result["download"] / 8)}/s UL: {human_readable_bytes(result["upload"] / 8)}/s')
     return string_speed
