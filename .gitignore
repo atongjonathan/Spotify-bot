@@ -4,3 +4,5 @@ __pycache__
 /telegram-bot-api
 /.idea
 speed.py
+Z_Logs.txt
+logs.txt
