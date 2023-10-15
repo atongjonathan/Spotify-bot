@@ -2,7 +2,6 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from config import SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET
 from logging_config import logger
-import json
 
    
 class Spotify():
@@ -119,7 +118,3 @@ class Spotify():
         items = self.sp.album_tracks(album_details["id"])["items"]
         album_details['album_tracks'] = [{"name":item['name'], "uri":item['uri'], "artists":item["artists"][0]["name"]} for item in items]
         return album_details
-
-spotify = Spotify()
-# print(json.dumps(spotify.artist("Selena Gomez"), indent=4))
-# print(spotify.album("", "","3Jlrqudmo7F0q1Wuc2Qizs"))
