@@ -3,3 +3,6 @@ __pycache__
 /venv
 /telegram-bot-api
 /.idea
+token.txt
+logs.txt
+topsongs.py
