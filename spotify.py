@@ -120,6 +120,6 @@ class Spotify():
         album_details['album_tracks'] = [{"name":item['name'], "uri":item['uri'], "artists":item["artists"][0]["name"]} for item in items]
         return album_details
 
-spotify = Spotify()
+# spotify = Spotify()
 # print(json.dumps(spotify.artist("Selena Gomez"), indent=4))
 # print(spotify.album("", "","3Jlrqudmo7F0q1Wuc2Qizs"))
