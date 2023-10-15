@@ -123,11 +123,11 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
         to_handle = bot.send_photo(chat_id,photo=track_details['image'],caption=caption, reply_markup=keyboard.start_markup)
         reply_markup = keyboard.lyrics_handler(track_details['name'], track_details['uri'])
         bot.edit_message_reply_markup(chat_id,to_handle.message_id,reply_markup=reply_markup)
-    update = bot.send_message(chat_id, "... Downloading song just a sec ...", reply_markup=keyboard.start_markup)
+    # update = bot.send_message(chat_id, "... Downloading song just a sec ...", reply_markup=keyboard.start_markup)
     data = None
     # query = f"{name} {artist}"
     # data = audio.download_webm(f"{query}", name)
-    bot.edit_message_text("Adding metadata😇...", chat_id, update.id)
+    # bot.edit_message_text("Adding metadata😇...", chat_id, update.id)
     if data is not None:
         files = [f for f in os.listdir(
             '.') if os.path.isfile(f) and f.endswith('.mp3')]
@@ -148,7 +148,7 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
         bot.send_chat_action(chat_id, "upload_audio")
         bot.send_audio(chat_id, audio=audio_io,
                        title=f"{track_details['name']}", performer=track_details['artists'], reply_markup=keyboard.start_markup, caption="@JonaAtong")
-    bot.delete_message(chat_id, update.id)
+    # bot.delete_message(chat_id, update.id)
 
 @retry_func
 def get_album_songs(uri, chat_id):
