@@ -54,4 +54,3 @@ class Audio():
         # Add the USLT frame to the ID3 tags
         audio.save(v2_version=3)
         return audio
-
