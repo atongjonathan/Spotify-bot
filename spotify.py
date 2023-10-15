@@ -50,13 +50,14 @@ class Spotify():
                 'name':chosen_artist["name"],
                 'genres': [genre.title() for genre in chosen_artist["genres"]],
                 }
-        top_tracks = self.sp.artist_top_tracks(artist_details["uri"])
-        top_tracks_list = top_tracks['tracks'][:self.no_of_songs]
-        artist_details['top_songs'] = [{"name":track['name'], "id":track['id']} for track in top_tracks_list]
+        top_tracks = self.sp.artist_top_tracks(artist_details["uri"])['tracks']
         artist_albums = self.sp.artist_albums(artist_details['uri'], album_type='album')
         artist_singles = self.sp.artist_albums(artist_details['uri'], album_type='single')
-        artist_details['albums'] = [{"name":item['name'], "uri":item['uri']} for item in artist_albums['items']]
-        artist_details['singles'] = [{"name":item['name'], "uri":item['uri']} for item in artist_singles['items']]
+        artist_complilations = self.sp.artist_albums(artist_details['uri'], album_type='compilation')
+        artist_details['album'] = [{"name":item['name'], "uri":item['uri']} for item in artist_albums['items']]
+        artist_details['top_songs'] = [{"name":track['name'], "uri":track['uri']} for track in top_tracks]
+        artist_details['single'] = [{"name":item['name'], "uri":item['uri']} for item in artist_singles['items']]
+        artist_details['compilation'] = [{"name":item['name'], "uri":item['uri']} for item in artist_complilations['items']]
         return artist_details
     
     def song(self, artist, title, uri) -> dict:
@@ -94,10 +95,11 @@ class Spotify():
 
     def album(self, artist, title, uri) -> dict:
         if uri is not None:
-            logger.info("Searching using uri ...")
-            chosen_album = self.sp.album(uri)
+            try:
+                chosen_album = self.sp.album(uri)
+            except:
+                return uri
         else:
-            logger.info("Searching using name ...")
             album_data = self.sp.search(q=f"{title}' {artist}", type="album")
             possible_albums = album_data["albums"]["items"]
             if len(possible_albums) == 0:
@@ -119,5 +121,5 @@ class Spotify():
         return album_details
 
 spotify = Spotify()
-# print((spotify.artist("Tate Mcrae")))
+# print(json.dumps(spotify.artist("Selena Gomez"), indent=4))
 # print(spotify.album("", "","3Jlrqudmo7F0q1Wuc2Qizs"))

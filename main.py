@@ -61,7 +61,7 @@ def get_song(message):
 
 @bot.message_handler(commands=['commands'])
 def info(message):
-    bot.reply_to(message, "/start - Starts the bot\n/song - Search for a song\n/artist - Search for an artist\n/lyrics - Get lyrics of a song")
+    bot.reply_to(message, "/start - Starts the bot\n/song - Search for a song\n/artist - Search for an artist\n/ping - Test Me")
 # /topsongs - Get top 10 tracks in the world")
 
 
@@ -153,17 +153,22 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
 
 def get_album_songs(uri, chat_id):
     album_details = spotify.album("", "", uri)
-    caption = f'👤Artist: {", ".join(album_details["artists"])}\n📀 Album: {album_details["name"]}\n⭐️ Released: {album_details["release_date"]}\n🔢 Total Tracks: {album_details["total_tracks"]}'
-    bot.send_photo(chat_id, album_details["images"], caption=caption)
-    album_tracks = album_details['album_tracks']
-    for track in album_tracks:
-        id = track["uri"]
-        artist = track["artists"]
-        track_details = spotify.song("", "", id)
-        caption = f'👤Artist: {artist}\n🔢Track : {track_details["track_no"]} of {album_details["total_tracks"]}\n🎵Song : {track_details["name"]}\n'
-        send_audios_or_previews(track_details, caption, chat_id, False)
-    bot.send_message(
-        chat_id, f'Those are all the {track_details["total_tracks"]} track(s) in "{album_details["name"]} by {artist} " 💪!', reply_markup=keyboard.start_markup)
+    if type(album_details) is str:
+        track_details = spotify.song("","",uri)
+        caption = f'👤Artist: { ", ".join(track_details["artists"])}\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n🎵Song : {track_details["name"]}\n'
+        send_audios_or_previews(track_details, caption, chat_id, True)
+    else:
+        caption = f'👤Artist: {", ".join(album_details["artists"])}\n📀 Album: {album_details["name"]}\n⭐️ Released: {album_details["release_date"]}\n🔢 Total Tracks: {album_details["total_tracks"]}'
+        bot.send_photo(chat_id, album_details["images"], caption=caption)
+        album_tracks = album_details['album_tracks']
+        for track in album_tracks:
+            id = track["uri"]
+            artist = track["artists"]
+            track_details = spotify.song("", "", id)
+            caption = f'👤Artist: {artist}\n🔢Track : {track_details["track_no"]} of {album_details["total_tracks"]}\n🎵Song : {track_details["name"]}\n'
+            send_audios_or_previews(track_details, caption, chat_id, False)
+        bot.send_message(
+            chat_id, f'Those are all the {track_details["total_tracks"]} track(s) in "{album_details["name"]}" by {artist}. 💪!', reply_markup=keyboard.start_markup)
 
 
 def send_checker(list_of_type, chat_id):
@@ -195,34 +200,33 @@ def handle_text(message):
         bot.send_message(message.chat.id, "⬇️ Hide command buttons",reply_markup=keyboard.hide_keyboard)
 
 def process_callback_query(call):
-    try:
+    # try:
         data = call.data
-        if data.startswith('albums'):
-            handle_albums_callback(call)
-        elif data.startswith('singles'):
-            handle_singles_callback(call)
+        if data.startswith('album') or data.startswith('single') or data.startswith('compilation') or data.startswith('toptracks'):
+            handle_list_callback(call)
         elif data.startswith("toptracks"):
             handle_top_tracks_callback(call)
         elif data.startswith("lyrics"):
             handle_lyrics_callback(call)
         elif data.startswith("close"):
             handle_close_callback(call)
-    except Exception as e:
-        logger.error(f"Error processing callback query: {str(e)}")
-        bot.send_message(call.message.chat.id, "An error occurred while processing your request. Please try again later.")
+        else:
+            uri = call.data
+            get_album_songs(uri, call.message.chat.id)            
+    # except Exception as e:
+        # logger.error(f"Error processing callback query: {str(e)}")
+        # bot.send_message(call.message.chat.id, "An error occurred while processing your request. Please try again later.")
 
 # Define separate functions to handle each type of callback
-def handle_albums_callback(call):
+def handle_list_callback(call):
+    type = call.data.split("_")[0]
     artist = call.data.split("_")[1]
     artist_details = spotify.artist(artist)
-    artist_albums = artist_details["albums"]
-    send_checker(artist_albums,call.message.chat.id)
-
-def handle_singles_callback(call):
-    artist = call.data.split("_")[1]
-    artist_details = spotify.artist(artist)
-    artist_singles = artist_details["singles"]
-    send_checker(artist_singles, call.message.chat.id)
+    if type == "toptracks":
+        artist_list = artist_details["top_songs"]
+    else:
+        artist_list = artist_details[f"{type}"]
+    send_checker(artist_list,call.message.chat.id)
 
 def handle_top_tracks_callback(call):
     send_top_songs(call)
@@ -250,9 +254,7 @@ def handle_close_callback(call):
                 bot.delete_message(call.message.chat.id,board["keyboard"].id)
             if board["name"] == 'handler':
                 bot.delete_message(call.message.chat.id,board["keyboard"].id)
-    else:
-        uri = call.data
-        get_album_songs(uri, call.message.chat.id)
+
 
 # Set up a callback query handler
 @bot.callback_query_handler(func=lambda call: True)

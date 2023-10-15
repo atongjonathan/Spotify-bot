@@ -14,13 +14,16 @@ class Keyboard():
 
     def make_for_type (self, list_of_type):
         keyboard = types.InlineKeyboardMarkup()
-        for album in list_of_type:
-            name = album["name"]
-            uri = album["uri"]
-            button = types.InlineKeyboardButton(name, callback_data=uri)
-            keyboard.add(button)
-        close = types.InlineKeyboardButton("Close", callback_data=f'close_make')
-        keyboard.add(close)
+        if len(list_of_type) == 0:
+            pass
+        else:
+            for idx, album in enumerate(list_of_type):
+                name = album["name"]
+                uri = album["uri"]
+                button = types.InlineKeyboardButton(f"{idx+1}. {name}", callback_data=uri)
+                keyboard.add(button)
+            close = types.InlineKeyboardButton("Close", callback_data=f'close_make')
+            keyboard.add(close)
         return keyboard
 
 
@@ -33,12 +36,12 @@ class Keyboard():
 
     def view_handler(self,name):
         keyboard = types.InlineKeyboardMarkup()
-        top_tracks_button = types.InlineKeyboardButton(f"{name}'s Top Tracks🔝",callback_data=f"toptracks_{name}")
-        singles_button = types.InlineKeyboardButton(f"View {name}'s Singles or EPs🧐",callback_data=f"singles_{name}")
-        albums_tracks_button = types.InlineKeyboardButton(f"View {name}'s Albums 🧐",callback_data=f"albums_{name}")
-        keyboard.add(top_tracks_button)
-        keyboard.add(singles_button)
-        keyboard.add(albums_tracks_button)
+        top_tracks_button = types.InlineKeyboardButton(f"Top Tracks🔝",callback_data=f"toptracks_{name}")
+        singles_button = types.InlineKeyboardButton(f"Singles or EPs🧐",callback_data=f"single_{name}")
+        albums_tracks_button = types.InlineKeyboardButton(f"Albums 🧐",callback_data=f"album_{name}")
+        compilation_button = types.InlineKeyboardButton(f"Compilations 🧐",callback_data=f"compilation_{name}")
+        keyboard.row(top_tracks_button,singles_button)
+        keyboard.row(albums_tracks_button,compilation_button)
         return keyboard
 
 
