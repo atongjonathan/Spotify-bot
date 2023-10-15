@@ -25,24 +25,6 @@ class Spotify():
         self.scope = "playlist-modify-public"
         self.no_of_songs = 5        
 
-    # def get_artist_albums(self,artist_id, type):
-    #     # Get artist albums information
-    #     artist_albums_information = self.sp.artist_albums(artist_id, album_type=type)               
-    #     # Extract album names and URIs from each item
-    #     artist_albums_info = [{'name': album['name'], 'uri': album['uri'], 'artist': album['artists'][0]['name']} for album in artist_albums_information['items']]
-    #     artist_albums = []
-    #     for album in enumerate(artist_albums_info):
-    #         artist_albums.append(album)
-    #     list_of_albums = []
-    #     for item in artist_albums:
-    #         dict = {
-    #             'index': item[0],
-    #             "name" : item[1]["name"],
-    #             "uri": item[1]["uri"],
-    #             'artist': item[1]['artist']
-    #         }
-    #         list_of_albums.append(dict)
-    #     return list_of_albums
 
     def artist(self, name:str) -> dict:
         """Get all possible details of an artist"""
@@ -79,10 +61,10 @@ class Spotify():
         artist_details['singles'] = [{"name":item['name'], "uri":item['uri']} for item in artist_singles['items']]
         return artist_details
     
-    def track(self, artist, title, uri) -> dict:
+    def song(self, artist, title, uri) -> dict:
         if uri is not None:
             logger.info("Searching using uri ...")
-            chosen_song = self.sp.album(uri)
+            chosen_song = self.sp.track(uri)
         else:
             """Get all possible details of an track"""
             track_data = self.sp.search(q=f"{artist} {title}", type="track")
@@ -90,7 +72,6 @@ class Spotify():
             if len(possible_tracks) == 0:
                 logger.info(f"No tracks found for {artist}, {title}")
                 return
-            # return json.dumps(possible_tracks[0], indent=4)
             chosen_song = possible_tracks[0]
         track_details = {
             'id': chosen_song["id"],
@@ -137,9 +118,9 @@ class Spotify():
             'images': chosen_album["images"][0]["url"],
         }
         items = self.sp.album_tracks(album_details["id"])["items"]
-        album_details['album_tracks'] = [{"name":item['name'], "uri":item['uri']} for item in items]
+        album_details['album_tracks'] = [{"name":item['name'], "uri":item['uri'], "artists":item["artists"][0]["name"]} for item in items]
         return album_details
 
 spotify = Spotify()
-print((spotify.artist("Tate Mcrae")))
+# print((spotify.artist("Tate Mcrae")))
 # print(spotify.album("", "","3Jlrqudmo7F0q1Wuc2Qizs"))

@@ -337,3 +337,164 @@
 2023-10-15 09:24:16,079 - logging_config - INFO - line 51 | Getting artist ...
 2023-10-15 09:24:17,903 - logging_config - INFO - line 78 | No image found for track Tate McRae
 2023-10-15 09:25:14,853 - logging_config - INFO - line 51 | Getting artist ...
+2023-10-15 09:30:07,973 - logging_config - INFO - line 354 | Bot is running :>
+2023-10-15 09:30:57,172 - logging_config - INFO - line 51 | Getting artist ...
+2023-10-15 09:30:58,265 - logging_config - INFO - line 354 | Bot is running :>
+2023-10-15 09:31:06,491 - logging_config - INFO - line 51 | Getting artist ...
+2023-10-15 09:31:13,248 - logging_config - INFO - line 51 | Getting artist ...
+2023-10-15 09:32:01,463 - logging_config - INFO - line 51 | Getting artist ...
+2023-10-15 09:32:02,480 - logging_config - INFO - line 354 | Bot is running :>
+2023-10-15 09:32:04,415 - logging_config - INFO - line 51 | Getting artist ...
+2023-10-15 09:33:41,664 - logging_config - INFO - line 51 | Getting artist ...
+2023-10-15 09:35:40,205 - logging_config - INFO - line 354 | Bot is running :>
+2023-10-15 09:35:43,452 - logging_config - INFO - line 51 | Getting artist ...
+2023-10-15 09:37:30,108 - logging_config - INFO - line 354 | Bot is running :>
+2023-10-15 09:37:39,804 - logging_config - INFO - line 51 | Getting artist ...
+2023-10-15 09:39:07,868 - logging_config - INFO - line 51 | Getting artist ...
+2023-10-15 09:39:13,388 - logging_config - INFO - line 119 | Searching using uri ...
+2023-10-15 09:39:59,883 - logging_config - INFO - line 354 | Bot is running :>
+2023-10-15 09:40:05,434 - logging_config - INFO - line 119 | Searching using uri ...
+2023-10-15 09:41:40,401 - logging_config - INFO - line 354 | Bot is running :>
+2023-10-15 09:41:46,075 - logging_config - INFO - line 119 | Searching using uri ...
+2023-10-15 09:42:36,182 - logging_config - INFO - line 354 | Bot is running :>
+2023-10-15 09:42:37,556 - logging_config - INFO - line 119 | Searching using uri ...
+2023-10-15 09:43:24,766 - logging_config - INFO - line 119 | Searching using uri ...
+2023-10-15 09:43:34,786 - logging_config - INFO - line 119 | Searching using uri ...
+2023-10-15 09:45:14,067 - logging_config - INFO - line 119 | Searching using uri ...
+2023-10-15 09:45:47,669 - logging_config - INFO - line 354 | Bot is running :>
+2023-10-15 09:45:49,377 - logging_config - INFO - line 119 | Searching using uri ...
+2023-10-15 09:45:51,177 - logging_config - INFO - line 84 | Searching using uri ...
+2023-10-15 09:46:37,137 - logging_config - INFO - line 354 | Bot is running :>
+2023-10-15 09:46:40,782 - logging_config - INFO - line 120 | Searching using uri ...
+2023-10-15 09:46:42,210 - logging_config - INFO - line 84 | Searching using uri ...
+2023-10-15 09:48:43,385 - logging_config - INFO - line 354 | Bot is running :>
+2023-10-15 09:48:46,832 - logging_config - INFO - line 120 | Searching using uri ...
+2023-10-15 09:48:48,217 - logging_config - INFO - line 84 | Searching using uri ...
+2023-10-15 09:49:14,406 - logging_config - INFO - line 51 | Getting artist ...
+2023-10-15 09:49:18,340 - logging_config - INFO - line 120 | Searching using uri ...
+2023-10-15 09:49:19,497 - logging_config - INFO - line 84 | Searching using uri ...
+2023-10-15 09:49:22,483 - logging_config - INFO - line 84 | Searching using uri ...
+2023-10-15 09:49:25,443 - logging_config - INFO - line 84 | Searching using uri ...
+2023-10-15 09:49:28,249 - logging_config - INFO - line 84 | Searching using uri ...
+2023-10-15 09:49:31,190 - logging_config - INFO - line 84 | Searching using uri ...
+2023-10-15 09:49:34,062 - logging_config - INFO - line 84 | Searching using uri ...
+2023-10-15 09:49:37,114 - logging_config - INFO - line 84 | Searching using uri ...
+2023-10-15 09:49:40,187 - logging_config - INFO - line 84 | Searching using uri ...
+2023-10-15 09:49:43,466 - logging_config - INFO - line 84 | Searching using uri ...
+2023-10-15 09:49:46,551 - logging_config - INFO - line 84 | Searching using uri ...
+2023-10-15 09:49:49,511 - logging_config - INFO - line 84 | Searching using uri ...
+2023-10-15 09:49:52,932 - logging_config - INFO - line 84 | Searching using uri ...
+2023-10-15 09:49:56,028 - logging_config - INFO - line 84 | Searching using uri ...
+2023-10-15 09:50:05,272 - logging_config - INFO - line 51 | Getting artist ...
+2023-10-15 09:53:05,037 - logging_config - INFO - line 345 | Bot is running :>
+2023-10-15 09:53:13,111 - logging_config - INFO - line 51 | Getting artist ...
+2023-10-15 09:53:17,471 - logging_config - INFO - line 51 | Getting artist ...
+2023-10-15 09:54:51,450 - TeleBot - ERROR - line 1083 | Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: BUTTON_DATA_INVALID
+2023-10-15 09:54:51,455 - TeleBot - ERROR - line 1085 | Exception traceback:
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\__init__.py", line 1074, in __threaded_polling
+    self.worker_pool.raise_exceptions()
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\util.py", line 147, in raise_exceptions
+    raise self.exception_info
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\util.py", line 90, in run
+    task(*args, **kwargs)
+  File "C:\Users\Administrator\Projects\Github\Bot\main2.py", line 65, in <lambda>
+    message.chat.id, lambda message: send_song_data(message))
+  File "C:\Users\Administrator\Projects\Github\Bot\main2.py", line 195, in send_song_data
+    send_audios_or_previews(track_details, caption, message.chat.id, True)
+  File "C:\Users\Administrator\Projects\Github\Bot\main2.py", line 208, in send_audios_or_previews
+    bot.edit_message_reply_markup(
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\__init__.py", line 3892, in edit_message_reply_markup
+    result = apihelper.edit_message_reply_markup(self.token, chat_id, message_id, inline_message_id, reply_markup)
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\apihelper.py", line 1368, in edit_message_reply_markup
+    return _make_request(token, method_url, params=payload, method='post')
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\apihelper.py", line 162, in _make_request
+    json_result = _check_result(method_name, result)
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\apihelper.py", line 189, in _check_result
+    raise ApiTelegramException(method_name, result, result_json)
+telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: BUTTON_DATA_INVALID
+
+2023-10-15 10:09:56,331 - logging_config - INFO - line 307 | Bot is running :>
+2023-10-15 10:10:12,891 - TeleBot - ERROR - line 1083 | Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: BUTTON_DATA_INVALID
+2023-10-15 10:10:12,896 - TeleBot - ERROR - line 1085 | Exception traceback:
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\__init__.py", line 1074, in __threaded_polling
+    self.worker_pool.raise_exceptions()
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\util.py", line 147, in raise_exceptions
+    raise self.exception_info
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\util.py", line 90, in run
+    task(*args, **kwargs)
+  File "C:\Users\Administrator\Projects\Github\Bot\main2.py", line 65, in <lambda>
+    message.chat.id, lambda message: send_song_data(message))
+  File "C:\Users\Administrator\Projects\Github\Bot\main2.py", line 165, in send_song_data
+    send_audios_or_previews(track_details, caption, message.chat.id, True)
+  File "C:\Users\Administrator\Projects\Github\Bot\main2.py", line 175, in send_audios_or_previews
+    bot.edit_message_reply_markup(chat_id,to_handle.message_id,reply_markup=reply_markup)
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\__init__.py", line 3892, in edit_message_reply_markup
+    result = apihelper.edit_message_reply_markup(self.token, chat_id, message_id, inline_message_id, reply_markup)
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\apihelper.py", line 1368, in edit_message_reply_markup
+    return _make_request(token, method_url, params=payload, method='post')
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\apihelper.py", line 162, in _make_request
+    json_result = _check_result(method_name, result)
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\apihelper.py", line 189, in _check_result
+    raise ApiTelegramException(method_name, result, result_json)
+telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: BUTTON_DATA_INVALID
+
+2023-10-15 10:10:49,726 - logging_config - INFO - line 307 | Bot is running :>
+2023-10-15 10:11:07,242 - TeleBot - ERROR - line 1083 | Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: BUTTON_DATA_INVALID
+2023-10-15 10:11:07,248 - TeleBot - ERROR - line 1085 | Exception traceback:
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\__init__.py", line 1074, in __threaded_polling
+    self.worker_pool.raise_exceptions()
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\util.py", line 147, in raise_exceptions
+    raise self.exception_info
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\util.py", line 90, in run
+    task(*args, **kwargs)
+  File "C:\Users\Administrator\Projects\Github\Bot\main2.py", line 65, in <lambda>
+    message.chat.id, lambda message: send_song_data(message))
+  File "C:\Users\Administrator\Projects\Github\Bot\main2.py", line 165, in send_song_data
+    send_audios_or_previews(track_details, caption, message.chat.id, True)
+  File "C:\Users\Administrator\Projects\Github\Bot\main2.py", line 175, in send_audios_or_previews
+    bot.edit_message_reply_markup(chat_id,to_handle.message_id,reply_markup=reply_markup)
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\__init__.py", line 3892, in edit_message_reply_markup
+    result = apihelper.edit_message_reply_markup(self.token, chat_id, message_id, inline_message_id, reply_markup)
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\apihelper.py", line 1368, in edit_message_reply_markup
+    return _make_request(token, method_url, params=payload, method='post')
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\apihelper.py", line 162, in _make_request
+    json_result = _check_result(method_name, result)
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\apihelper.py", line 189, in _check_result
+    raise ApiTelegramException(method_name, result, result_json)
+telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: BUTTON_DATA_INVALID
+
+2023-10-15 10:11:57,935 - logging_config - INFO - line 307 | Bot is running :>
+2023-10-15 10:12:06,235 - TeleBot - ERROR - line 1083 | Threaded polling exception: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message
+2023-10-15 10:12:06,241 - TeleBot - ERROR - line 1085 | Exception traceback:
+Traceback (most recent call last):
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\__init__.py", line 1074, in __threaded_polling
+    self.worker_pool.raise_exceptions()
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\util.py", line 147, in raise_exceptions
+    raise self.exception_info
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\util.py", line 90, in run
+    task(*args, **kwargs)
+  File "C:\Users\Administrator\Projects\Github\Bot\main2.py", line 65, in <lambda>
+    message.chat.id, lambda message: send_song_data(message))
+  File "C:\Users\Administrator\Projects\Github\Bot\main2.py", line 165, in send_song_data
+    send_audios_or_previews(track_details, caption, message.chat.id, True)
+  File "C:\Users\Administrator\Projects\Github\Bot\main2.py", line 175, in send_audios_or_previews
+    bot.edit_message_reply_markup(chat_id,to_handle.message_id)#,reply_markup=reply_markup)
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\__init__.py", line 3892, in edit_message_reply_markup
+    result = apihelper.edit_message_reply_markup(self.token, chat_id, message_id, inline_message_id, reply_markup)
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\apihelper.py", line 1368, in edit_message_reply_markup
+    return _make_request(token, method_url, params=payload, method='post')
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\apihelper.py", line 162, in _make_request
+    json_result = _check_result(method_name, result)
+  File "C:\Users\Administrator\Projects\Github\Bot\venv\lib\site-packages\telebot\apihelper.py", line 189, in _check_result
+    raise ApiTelegramException(method_name, result, result_json)
+telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsuccessful. Error code: 400. Description: Bad Request: message is not modified: specified new message content and reply markup are exactly the same as a current content and reply markup of the message
+
+2023-10-15 10:12:29,182 - logging_config - INFO - line 307 | Bot is running :>
+2023-10-15 10:16:08,823 - logging_config - INFO - line 306 | Bot is running :>
+2023-10-15 10:17:47,759 - logging_config - INFO - line 306 | Bot is running :>
+2023-10-15 10:18:07,375 - logging_config - INFO - line 66 | Searching using uri ...
+2023-10-15 10:18:58,521 - logging_config - INFO - line 306 | Bot is running :>
+2023-10-15 10:19:24,996 - logging_config - INFO - line 66 | Searching using uri ...
