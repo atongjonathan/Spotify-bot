@@ -5,8 +5,9 @@ from mutagen.easyid3 import EasyID3
 from mutagen.id3 import APIC, ID3
 import urllib.request
 
+
 class Audio():
-    def download_webm(self,query,title):
+    def download_webm(self, query, title):
         # Define a regular expression pattern to match non-English letters
         non_english_pattern = re.compile(r'[^\x00-\x7F]+')
         # Replace non-English letters with an empty string
@@ -24,14 +25,14 @@ class Audio():
                 pass
             else:
                 best_uri = url
-        vid_url = best_uri 
+        vid_url = best_uri
         for file in os.listdir("."):
             if os.path.isfile(file) and file.endswith(".mp3"):
                 return file
         return None
-        
 
-    def set_metadata(albumartist,artist,date,album,title,tracknumber,photo,file_path):
+    def set_metadata(albumartist, artist, date, album,
+                     title, tracknumber, photo, file_path):
         """adds metadata to the downloaded mp3 file"""
         mp3file = EasyID3(file_path)
         # add metadata
