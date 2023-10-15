@@ -1,12 +1,9 @@
 import spotipy
-# from spotipy import SpotifyClientCredentials
 from spotipy.oauth2 import SpotifyOAuth
 from config import SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET
 from logging_config import logger
-# from logging import basicConfig, getLogger, INFO, FileHandler, StreamHandler
 import json
-# basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - line %(lineno)d | %(message)s',
-#             handlers=[FileHandler('Z_Logs.txt'), StreamHandler()], level=INFO)
+
    
 class Spotify():
     SPOTIPY_CLIENT_ID = SPOTIPY_CLIENT_ID
@@ -15,8 +12,6 @@ class Spotify():
     TOKEN_CACHE_PATH = "token.txt"
 
     def __init__(self) -> None:
-        # # Authorization 
-        # self.spotify = Spotify(client_credentials_manager=SpotifyClientCredentials())
         self.sp = spotipy.Spotify(
                 auth_manager=SpotifyOAuth(
                 scope=self.SCOPE,
@@ -27,29 +22,27 @@ class Spotify():
                 cache_path=self.TOKEN_CACHE_PATH
             )
         )
-
-        # # Authorization 2
         self.scope = "playlist-modify-public"
         self.no_of_songs = 5        
 
-    def get_artist_albums(self,artist_id, type):
-        # Get artist albums information
-        artist_albums_information = self.sp.artist_albums(artist_id, album_type=type)               
-        # Extract album names and URIs from each item
-        artist_albums_info = [{'name': album['name'], 'uri': album['uri'], 'artist': album['artists'][0]['name']} for album in artist_albums_information['items']]
-        artist_albums = []
-        for album in enumerate(artist_albums_info):
-            artist_albums.append(album)
-        list_of_albums = []
-        for item in artist_albums:
-            dict = {
-                'index': item[0],
-                "name" : item[1]["name"],
-                "uri": item[1]["uri"],
-                'artist': item[1]['artist']
-            }
-            list_of_albums.append(dict)
-        return list_of_albums
+    # def get_artist_albums(self,artist_id, type):
+    #     # Get artist albums information
+    #     artist_albums_information = self.sp.artist_albums(artist_id, album_type=type)               
+    #     # Extract album names and URIs from each item
+    #     artist_albums_info = [{'name': album['name'], 'uri': album['uri'], 'artist': album['artists'][0]['name']} for album in artist_albums_information['items']]
+    #     artist_albums = []
+    #     for album in enumerate(artist_albums_info):
+    #         artist_albums.append(album)
+    #     list_of_albums = []
+    #     for item in artist_albums:
+    #         dict = {
+    #             'index': item[0],
+    #             "name" : item[1]["name"],
+    #             "uri": item[1]["uri"],
+    #             'artist': item[1]['artist']
+    #         }
+    #         list_of_albums.append(dict)
+    #     return list_of_albums
 
     def artist(self, name:str) -> dict:
         """Get all possible details of an artist"""
@@ -79,22 +72,26 @@ class Spotify():
                 }
         top_tracks = self.sp.artist_top_tracks(artist_details["uri"])
         top_tracks_list = top_tracks['tracks'][:self.no_of_songs]
-        artist_details['top_songs'] = [track['name'] for track in top_tracks_list]
+        artist_details['top_songs'] = [{"name":track['name'], "id":track['id']} for track in top_tracks_list]
         artist_albums = self.sp.artist_albums(artist_details['uri'], album_type='album')
         artist_singles = self.sp.artist_albums(artist_details['uri'], album_type='single')
-        artist_details['albums'] = [item["name"] for item in artist_albums['items']]
-        artist_details['singles'] = [item["name"] for item in artist_singles['items']]
+        artist_details['albums'] = [{"name":item['name'], "uri":item['uri']} for item in artist_albums['items']]
+        artist_details['singles'] = [{"name":item['name'], "uri":item['uri']} for item in artist_singles['items']]
         return artist_details
     
-    def track(self, artist, title) -> dict:
-        """Get all possible details of an track"""
-        track_data = self.sp.search(q=f"{artist} {title}", type="track")
-        possible_tracks = track_data["tracks"]["items"]
-        if len(possible_tracks) == 0:
-            logger.info(f"No tracks found for {artist}, {title}")
-            return
-        # return json.dumps(possible_tracks[0], indent=4)
-        chosen_song = possible_tracks[0]
+    def track(self, artist, title, uri) -> dict:
+        if uri is not None:
+            logger.info("Searching using uri ...")
+            chosen_song = self.sp.album(uri)
+        else:
+            """Get all possible details of an track"""
+            track_data = self.sp.search(q=f"{artist} {title}", type="track")
+            possible_tracks = track_data["tracks"]["items"]
+            if len(possible_tracks) == 0:
+                logger.info(f"No tracks found for {artist}, {title}")
+                return
+            # return json.dumps(possible_tracks[0], indent=4)
+            chosen_song = possible_tracks[0]
         track_details = {
             'id': chosen_song["id"],
             'artists':[artist["name"] for artist in chosen_song["album"]["artists"]],
@@ -117,15 +114,19 @@ class Spotify():
         
         return track_details     
 
-    def album(self, artist, title) -> dict:
-    # Get album tracks information
-        album_data = self.sp.search(q=f"{title}' {artist}", type="album")
-        possible_albums = album_data["albums"]["items"]
-        if len(possible_albums) == 0:
-            logger.info("No tracks found")
-            return
-        # return json.dumps(possible_tracks[0], indent=4)
-        chosen_album = possible_albums[0]
+    def album(self, artist, title, uri) -> dict:
+        if uri is not None:
+            logger.info("Searching using uri ...")
+            chosen_album = self.sp.album(uri)
+        else:
+            logger.info("Searching using name ...")
+            album_data = self.sp.search(q=f"{title}' {artist}", type="album")
+            possible_albums = album_data["albums"]["items"]
+            if len(possible_albums) == 0:
+                logger.info("No tracks found")
+                return
+            # return json.dumps(possible_tracks[0], indent=4)
+            chosen_album = possible_albums[0]
         album_details = {
             'id': chosen_album["id"],
             'artists':[artist["name"] for artist in chosen_album["artists"]],
@@ -136,14 +137,9 @@ class Spotify():
             'images': chosen_album["images"][0]["url"],
         }
         items = self.sp.album_tracks(album_details["id"])["items"]
-        album_details['album_tracks'] = {"name":[item["name"] for item in items]}
+        album_details['album_tracks'] = [{"name":item['name'], "uri":item['uri']} for item in items]
         return album_details
 
-# logger.info("Message")
 spotify = Spotify()
-# print((spotify.artist("Tate Mcrae")))
-# print(spotify.album("ELIO", "ELIO'S INFERNO"))
-# with open("data.txt", 'w') as file:
-#     file.write(spotify.album("ELIO", "ELIO'S INFERNO"))
-# logger.info("saved to file")
-# print(spotify.get_artist_albums("41MozSoPIsD1dJM0CLPjZF", 'album'))
+print((spotify.artist("Tate Mcrae")))
+# print(spotify.album("", "","3Jlrqudmo7F0q1Wuc2Qizs"))
