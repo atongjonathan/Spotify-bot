@@ -1,0 +1,2 @@
+2023-10-15 11:42:48,499 - __main__ - INFO - 368 | Bot is running ..
+2023-10-15 11:43:51,038 - logging_config - INFO - line 263 | Bot is running :>
