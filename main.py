@@ -115,7 +115,7 @@ def send_song_data(message):
     caption = f'👤Artist: {", ".join(track_details["artists"])}\n🎵Song : {track_details["name"]}\n━━━━━━━━━━━━\n📀Album : {track_details["album"]}\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n⭐️ Released: {track_details["release_date"]}'
     send_audios_or_previews(track_details, caption, message.chat.id, True)
 
-
+@retry_func
 def send_audios_or_previews(track_details, caption, chat_id, send_photo):
     track_url = track_details['external_url']
     if send_photo:
@@ -150,7 +150,7 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
                        title=f"{track_details['name']}", performer=track_details['artists'], reply_markup=keyboard.start_markup, caption="@JonaAtong")
     bot.delete_message(chat_id, update.id)
 
-
+@retry_func
 def get_album_songs(uri, chat_id):
     album_details = spotify.album("", "", uri)
     if type(album_details) is str:
