@@ -1,4 +1,3 @@
-import os
 from lyrics_extractor import SongLyrics
 from config import GCS_API_KEY, GCS_ENGINE_ID
 from config import GENIUS_ACCESS_TOKEN
