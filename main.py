@@ -7,7 +7,7 @@ from telebot import util
 from audio import Audio
 from spotify import Spotify
 from keyboards import Keyboard
-from get_lyrics import extract_lyrics
+from get_lyrics import extract_lyrics, musicxmatch_lyrics
 from config import TELEGRAM_BOT_TOKEN
 from logging_config import logger
 
@@ -46,7 +46,7 @@ def welcome(message):
 
     bot.send_message(
         message.chat.id,
-        f"Hello {message.from_user.first_name}, Welcome to Spotify SG✨'s bot!. For help see commands?👉 /commands",
+        f"Hello `{message.from_user.first_name}`, Welcome to Spotify SG✨'s bot!. For help see commands?👉 /commands",
         reply_markup=keyboard.start_markup)
 
 
@@ -95,7 +95,7 @@ def ping(message):
     elapsed_time_ms = int((end_time - start_time) * 1000)
 
     bot.edit_message_text(
-        f"Pong! 🏓\nResponse Time: {elapsed_time_ms} ms",
+        f"Pong! 🏓\nResponse Time: `{elapsed_time_ms} ms`",
         chat_id=message.chat.id,
         message_id=response.message_id)
 
@@ -113,7 +113,7 @@ def send_top_songs(call):
     for track in top_tracks:
         track_details = spotify.song(artist_details["name"], track, None)
         try:
-            caption = f'👤Artist: {", ".join(track_details["artists"])}\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n🎵Song : {track_details["name"]}\n'
+            caption = f'👤Artist: `{", ".join(track_details["artists"])}`\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n🎵Song : `{track_details["name"]}`\n'
         except BaseException:
             continue
         send_audios_or_previews(
@@ -122,7 +122,7 @@ def send_top_songs(call):
             call.message.chat.id,
             True)
     bot.send_message(
-        call.message.chat.id, f'Those are {artist_details["name"]}\'s top 🔝 {spotify.no_of_songs} tracks 💪!', reply_markup=keyboard.start_markup)
+        call.message.chat.id, f'Those are `{artist_details["name"]}`\'s top 🔝 {spotify.no_of_songs} tracks 💪!', reply_markup=keyboard.start_markup)
     return
 
 
@@ -131,16 +131,18 @@ def search_artist(message) -> None:
     if artist_details is None:
         bot.send_message(
             message.chat.id,
-            "Artist not found!⚠. Make sure to include all artist name properties including supersripts.\nTry again? /artist",
+            f"Artist `{message.text}` not found!⚠. Please check your spelling and also include special characters.\nTry again? /artist",
             reply_markup=keyboard.start_markup)
         return
-    caption = f'👤Artist: {artist_details["name"]}\n🧑Followers: {artist_details["followers"]:,} \n🎭Genre(s): {", ".join(artist_details["genres"])} \n'
+    caption = f'👤Artist: `{artist_details["name"]}`\n🧑Followers: `{artist_details["followers"]:,}` \n🎭Genre(s): `{", ".join(artist_details["genres"])}` \n'
+    lists_of_type = [artist_details["single"], artist_details["album"],artist_details["compilation"]]
+    lengths = [len(item) for item in lists_of_type]
     pin = bot.send_photo(
         message.chat.id,
         photo=artist_details["images"],
         caption=caption,
         reply_markup=keyboard.view_handler(
-            artist_details["name"]))
+            artist_details["name"], lengths))
     bot.pin_chat_message(message.chat.id, pin.id)
 
 
@@ -148,7 +150,7 @@ def search_artist(message) -> None:
 def send_song_data(message):
     artist, title = check_input(message)
     track_details = spotify.song(artist, title, None)
-    caption = f'👤Artist: {", ".join(track_details["artists"])}\n🎵Song : {track_details["name"]}\n━━━━━━━━━━━━\n📀Album : {track_details["album"]}\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n⭐️ Released: {track_details["release_date"]}'
+    caption = f'👤Artist: `{", ".join(track_details["artists"])}`\n🎵Song : `{track_details["name"]}`\n━━━━━━━━━━━━\n📀Album : `{track_details["album"]}`\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n⭐️ Released: `{track_details["release_date"]}`'
     send_audios_or_previews(track_details, caption, message.chat.id, True)
 
 
@@ -201,10 +203,10 @@ def get_album_songs(uri, chat_id):
     album_details = spotify.album("", "", uri)
     if isinstance(album_details, str):
         track_details = spotify.song("", "", uri)
-        caption = f'👤Artist: { ", ".join(track_details["artists"])}\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n🎵Song : {track_details["name"]}\n'
+        caption = f'👤Artist: `{ ", ".join(track_details["artists"])}`\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n🎵Song : `{track_details["name"]}`\n'
         send_audios_or_previews(track_details, caption, chat_id, True)
     else:
-        caption = f'👤Artist: {", ".join(album_details["artists"])}\n📀 Album: {album_details["name"]}\n⭐️ Released: {album_details["release_date"]}\n🔢 Total Tracks: {album_details["total_tracks"]}'
+        caption = f'👤Artist: `{", ".join(album_details["artists"])}`\n📀 Album: `{album_details["name"]}`\n⭐️ Released: `{album_details["release_date"]}`\n🔢 Total Tracks: {album_details["total_tracks"]}'
         bot.send_photo(
             chat_id,
             album_details["images"],
@@ -215,10 +217,10 @@ def get_album_songs(uri, chat_id):
             id = track["uri"]
             artist = track["artists"]
             track_details = spotify.song("", "", id)
-            caption = f'👤Artist: {artist}\n🔢Track : {track_details["track_no"]} of {album_details["total_tracks"]}\n🎵Song : {track_details["name"]}\n'
+            caption = f'👤Artist: `{artist}`\n🔢Track : {track_details["track_no"]} of {album_details["total_tracks"]}\n🎵Song : `{track_details["name"]}`\n'
             send_audios_or_previews(track_details, caption, chat_id, False)
         bot.send_message(
-            chat_id, f'Those are all the {track_details["total_tracks"]} track(s) in "{album_details["name"]}" by {artist}. 💪!', reply_markup=keyboard.start_markup)
+            chat_id, f'Those are all the {track_details["total_tracks"]} track(s) in "`{album_details["name"]}`" by `{artist}`. 💪!', reply_markup=keyboard.start_markup)
 
 
 def send_checker(list_of_type, chat_id):
@@ -276,7 +278,7 @@ def process_callback_query(call):
         logger.error(f"Error processing callback query: {str(e)}")
         bot.send_message(
             call.message.chat.id,
-            "An error occurred while processing your request. Please try again later.")
+            "`An error occurred while processing your request. Please try again later.`")
 
 
 def handle_list_callback(call):
@@ -299,8 +301,11 @@ def handle_lyrics_callback(call):
     track_details = spotify.song("", "", uri)
     artist = ', '.join(track_details['artists'])
     title = track_details["name"]
-    lyrics = extract_lyrics.get_lyrics(f"{title} {artist}")["lyrics"]
-    caption = f"👤Artist: {', '.join(track_details['artists'])}\n🎵Song : {track_details['name']}\n━━━━━━━━━━━━\n📀Album : {track_details['album']}\n🔢Track : {track_details['track_no']} of {track_details['total_tracks']}\n⭐️ Released: {track_details['release_date']}\n\n🎶Lyrics📝:\n\n`{lyrics}`"
+    try:
+        lyrics = extract_lyrics.get_lyrics(f"{title} {artist}")["lyrics"]
+    except:
+        lyrics = musicxmatch_lyrics(artist,title)
+    caption = f"👤Artist: `{', '.join(track_details['artists'])}`\n🎵Song : `{track_details['name']}`\n━━━━━━━━━━━━\n📀Album : `{track_details['album']}`\n🔢Track : {track_details['track_no']} of {track_details['total_tracks']}\n⭐️ Released: `{track_details['release_date']}`\n\n🎶Lyrics📝:\n\n`{lyrics}`"
     try:
         bot.send_message(
             call.message.chat.id,

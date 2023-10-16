@@ -31,6 +31,8 @@ class Spotify():
             if name in str(artist["name"]).lower():
                 chosen_artist = artist
                 break
+        if chosen_artist is None:
+            return
         images_data = chosen_artist["images"]
 
         # return self.top_songs,self.top_tracks['tracks'][:no_of_tracks]
