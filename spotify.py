@@ -2,7 +2,7 @@ import spotipy
 from config import SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET
 from logging_config import logger
 from spotipy.oauth2 import SpotifyClientCredentials
-
+import json
 
 class Spotify():
     SPOTIPY_CLIENT_ID = SPOTIPY_CLIENT_ID
@@ -44,21 +44,22 @@ class Spotify():
             'genres': [genre.title() for genre in chosen_artist["genres"]],
         }
         top_tracks = self.sp.artist_top_tracks(artist_details["uri"])['tracks']
-        artist_albums = self.sp.artist_albums(
-            artist_details['uri'], album_type='album')
-        artist_singles = self.sp.artist_albums(
-            artist_details['uri'], album_type='single')
-        artist_complilations = self.sp.artist_albums(
-            artist_details['uri'], album_type='compilation')
-        artist_details['album'] = [
-            {"name": item['name'], "uri":item['uri']} for item in artist_albums['items']]
         artist_details['top_songs'] = [
-            {"name": track['name'], "uri":track['uri']} for track in top_tracks]
-        artist_details['single'] = [
-            {"name": item['name'], "uri":item['uri']} for item in artist_singles['items']]
-        artist_details['compilation'] = [
-            {"name": item['name'], "uri":item['uri']} for item in artist_complilations['items']]
+            {"name": track['name'], "uri":track['uri'], "artist": track["album"]["artists"][0]["name"]} for track in top_tracks]
+        artist_details = self.additional_details(artist_details)
         return artist_details
+
+
+    def additional_details(self, artist_details):
+        types = ["album","single", "compilation"]
+        for one_type in types:
+            key = f"artist_{one_type}s"
+            artist_details[f"{key}"] = self.sp.artist_albums(
+                    artist_details['uri'], album_type=f'{one_type}')
+            artist_details[f"{key}"] = (artist_details[f"{key}"]["items"])
+            artist_details[key] = {f"{one_type}":[{"artist": artist_details["name"],"name": item['name'], "uri":item['uri']} for item in artist_details[key]]}
+        return artist_details
+
 
     def song(self, artist, title, uri) -> dict:
         if uri is not None:

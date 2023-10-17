@@ -36,7 +36,6 @@ def retry_func(func):
         logger.info("Max Retries reached")
         return None
     return wrapper
-# Commands
 
 
 @bot.message_handler(commands=['start'])
@@ -80,7 +79,7 @@ def info(message):
 
 @bot.message_handler(commands=['log'])
 def get_logs(message):
-    with open('Z_logs.txt') as file:
+    with open('logs.txt') as file:
         bot.send_document(
             message.chat.id,
             file,
@@ -122,7 +121,7 @@ def send_top_songs(call):
             call.message.chat.id,
             True)
     bot.send_message(
-        call.message.chat.id, f'Those are `{artist_details["name"]}`\'s top 🔝 {spotify.no_of_songs} tracks 💪!', reply_markup=keyboard.start_markup)
+        call.message.chat.id, f'Those are `{artist_details["name"]}`\'s top 🔝 10 tracks 💪!', reply_markup=keyboard.start_markup)
     return
 
 
@@ -135,7 +134,7 @@ def search_artist(message) -> None:
             reply_markup=keyboard.start_markup)
         return
     caption = f'👤Artist: `{artist_details["name"]}`\n🧑Followers: `{artist_details["followers"]:,}` \n🎭Genre(s): `{", ".join(artist_details["genres"])}` \n'
-    lists_of_type = [artist_details["single"], artist_details["album"],artist_details["compilation"]]
+    lists_of_type = [artist_details["artist_singles"]["single"], artist_details["artist_albums"]["album"],artist_details["artist_compilations"]["compilation"]]
     lengths = [len(item) for item in lists_of_type]
     pin = bot.send_photo(
         message.chat.id,
@@ -156,15 +155,15 @@ def send_song_data(message):
 
 def send_audios_or_previews(track_details, caption, chat_id, send_photo):
     track_url = track_details['external_url']
+    reply_markup = keyboard.lyrics_handler(
+            track_details['name'], track_details['uri'])
     if send_photo:
         time.sleep(1)
-        reply_markup = keyboard.lyrics_handler(
-            track_details['name'], track_details['uri'])
         bot.send_photo(
             chat_id,
             photo=track_details['image'],
             caption=caption,
-            reply_markup=reply_markup)
+            reply_markup=keyboard.start_markup)
     update = bot.send_message(chat_id, "... Downloading song just a sec ...")
     data = None
     # query = f"{name} {artist}"
@@ -182,7 +181,7 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
         with open(path, "rb") as file:
             bot.send_chat_action(chat_id, "upload_audio")
             bot.send_audio(chat_id, audio=file, title=f'{track_details["name"]}', performer=track_details["artists"],
-                           reply_markup=keyboard.start_markup, caption="@JonaAtong")
+                           reply_markup=reply_markup, caption="@JonaAtong")
         os.remove(path)
     elif track_details['preview_url'] is None:
         bot.send_message(
@@ -195,7 +194,7 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
         audio_io = BytesIO(audio_content)
         bot.send_chat_action(chat_id, "upload_audio")
         bot.send_audio(chat_id, audio=audio_io,
-                       title=f"{track_details['name']}", performer=track_details['artists'], reply_markup=keyboard.start_markup, caption="@JonaAtong")
+                       title=f"{track_details['name']}", performer=track_details['artists'], reply_markup=reply_markup, caption="@JonaAtong")
     bot.delete_message(chat_id, update.id)
 
 
@@ -223,11 +222,11 @@ def get_album_songs(uri, chat_id):
             chat_id, f'Those are all the {track_details["total_tracks"]} track(s) in "`{album_details["name"]}`" by `{artist}`. 💪!', reply_markup=keyboard.start_markup)
 
 
-def send_checker(list_of_type, chat_id):
+def send_checker(list_of_type, chat_id, current_page=0):
     make = bot.send_message(
         chat_id,
         "Awesome which ones tracks do you want to get?",
-        reply_markup=keyboard.make_for_type(list_of_type))
+        reply_markup=keyboard.make_for_type(list_of_type, current_page))
     make_dict = {"name": 'make', "keyboard": make}
     keyboards_list.append(make_dict)
 
@@ -271,6 +270,8 @@ def process_callback_query(call):
             handle_lyrics_callback(call)
         elif data.startswith("close"):
             handle_close_callback(call)
+        elif data.startswith("_"):
+            handle_pagination_callback(call)                    
         else:
             uri = call.data
             get_album_songs(uri, call.message.chat.id)
@@ -288,12 +289,29 @@ def handle_list_callback(call):
     if type == "toptracks":
         artist_list = artist_details["top_songs"]
     else:
-        artist_list = artist_details[f"{type}"]
+        artist_list = artist_details[f"artist_{type}s"]
     send_checker(artist_list, call.message.chat.id)
 
 
 def handle_top_tracks_callback(call):
     send_top_songs(call)
+
+def handle_pagination_callback(call):
+    handle = call.data.split('_')[1]
+    artist = call.data.split('_')[2]
+    type = call.data.split('_')[3]
+    page = call.data.split('_')[4]
+    artist_details = spotify.artist(artist)
+    if type is None or "artist_Nones":
+        list_of_type = artist_details[f"top_songs"]
+    else:
+        list_of_type = artist_details[f"artist_{type}s"]    
+    if handle == 'n':
+        page = int(page)+1
+        send_checker(list_of_type,call.message.chat.id, page)
+    if handle == 'p':
+        page = int(page)-1
+        send_checker(list_of_type,call.message.chat.id, page)
 
 
 def handle_lyrics_callback(call):
@@ -341,6 +359,5 @@ def handle_query(call):
 
 
 if __name__ == '__main__':
-    bot.send_message(1095126805, "You can use me now 😎")
     logger.info("Bot is running :>")
     bot.polling()
