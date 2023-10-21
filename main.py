@@ -264,7 +264,7 @@ def handle_text(message):
 
 
 def process_callback_query(call):
-    try:
+    # try:
         data = call.data
         if data.startswith('album') or data.startswith('single') or data.startswith(
                 'compilation') or data.startswith('toptracks'):
@@ -280,11 +280,11 @@ def process_callback_query(call):
         else:
             uri = call.data
             get_album_songs(uri, call.message.chat.id)
-    except Exception as e:
-        logger.error(f"Error processing callback query: {str(e)}")
-        bot.send_message(
-            call.message.chat.id,
-            "`An error occurred while processing your request. Please try again later.`")
+    # except Exception as e:
+    #     logger.error(f"Error processing callback query: {str(e)}")
+    #     bot.send_message(
+    #         call.message.chat.id,
+    #         "`An error occurred while processing your request. Please try again later.`")
 
 
 def handle_list_callback(call):
@@ -324,12 +324,13 @@ def handle_lyrics_callback(call):
     track_details = spotify.song("", "", uri)
     artist = ', '.join(track_details['artists'])
     title = track_details["name"]
-    try:
-        lyrics = lyrics_extractor_lyrics(artist,title)
-        logger.info("Lyrics by Lyrics Extractor")
-    except:
-        lyrics = musicxmatch_lyrics(artist,title)
-        logger.info("Lyrics by MusixMatch")
+    # try:
+        # logger.info("Searching by Lyrics Extractor")
+        # pass
+        # lyrics = lyrics_extractor_lyrics(artist,title)
+    # except:
+    logger.info("Searching by MusixMatch")
+    lyrics = musicxmatch_lyrics(artist,title)
     caption = f"👤Artist: `{', '.join(track_details['artists'])}`\n🎵Song : `{track_details['name']}`\n━━━━━━━━━━━━\n📀Album : `{track_details['album']}`\n🔢Track : {track_details['track_no']} of {track_details['total_tracks']}\n⭐️ Released: `{track_details['release_date']}`\n\n🎶Lyrics📝:\n\n`{lyrics}`"
     try:
         bot.send_message(
