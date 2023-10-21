@@ -7,7 +7,7 @@ from telebot import util
 from audio import Audio
 from spotify import Spotify
 from keyboards import Keyboard
-from get_lyrics import extract_lyrics, musicxmatch_lyrics
+from get_lyrics import lyrics_extractor_lyrics, musicxmatch_lyrics
 from config import TELEGRAM_BOT_TOKEN
 from logging_config import logger
 
@@ -223,12 +223,17 @@ def get_album_songs(uri, chat_id):
 
 
 def send_checker(list_of_type, chat_id, current_page=0):
-    make = bot.send_message(
-        chat_id,
-        "Awesome which ones tracks do you want to get?",
-        reply_markup=keyboard.make_for_type(list_of_type, current_page))
-    make_dict = {"name": 'make', "keyboard": make}
-    keyboards_list.append(make_dict)
+    reply_markup=keyboard.make_for_type(list_of_type, current_page)
+    try:
+        board = keyboards_list[0]["keyboard"]
+        bot.edit_message_reply_markup(chat_id,board.message_id,reply_markup=reply_markup)
+    except:
+        make = bot.send_message(
+            chat_id,
+            "Awesome which ones tracks do you want to get?",reply_markup=reply_markup
+            )
+        make_dict = {"name": 'make', "keyboard": make}
+        keyboards_list.append(make_dict)
 
 
 def check_input(message):
@@ -320,9 +325,11 @@ def handle_lyrics_callback(call):
     artist = ', '.join(track_details['artists'])
     title = track_details["name"]
     try:
-        lyrics = extract_lyrics.get_lyrics(f"{title} {artist}")["lyrics"]
+        lyrics = lyrics_extractor_lyrics(artist,title)
+        logger.info("Lyrics by Lyrics Extractor")
     except:
         lyrics = musicxmatch_lyrics(artist,title)
+        logger.info("Lyrics by MusixMatch")
     caption = f"👤Artist: `{', '.join(track_details['artists'])}`\n🎵Song : `{track_details['name']}`\n━━━━━━━━━━━━\n📀Album : `{track_details['album']}`\n🔢Track : {track_details['track_no']} of {track_details['total_tracks']}\n⭐️ Released: `{track_details['release_date']}`\n\n🎶Lyrics📝:\n\n`{lyrics}`"
     try:
         bot.send_message(

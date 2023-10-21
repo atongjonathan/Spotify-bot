@@ -2,7 +2,10 @@ from lyrics_extractor import SongLyrics
 from config import GCS_API_KEY, GCS_ENGINE_ID, MUSICXMATCH_API_KEY
 import requests
 
-extract_lyrics = SongLyrics(GCS_API_KEY, GCS_ENGINE_ID)
+def lyrics_extractor_lyrics(artist,title):
+    extract_lyrics = SongLyrics(GCS_API_KEY, GCS_ENGINE_ID)
+    lyrics = extract_lyrics.get_lyrics(f"{title} {artist}")["lyrics"]
+    return lyrics
 
 def musicxmatch_lyrics(artist, title):
     lyrics_params = {
