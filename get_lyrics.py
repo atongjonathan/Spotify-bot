@@ -8,13 +8,14 @@ def lyrics_extractor_lyrics(artist,title):
     return lyrics
 
 def musicxmatch_lyrics(artist, title):
+    headers = headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"}
     lyrics_params = {
         "apikey": MUSICXMATCH_API_KEY
     }
     track_params = lyrics_params
     track_params["q_track"] =  f"{title}"
     track_params["q_artist"] =  f"{artist}"
-    response = requests.get("https://api.musixmatch.com/ws/1.1/track.search", params=track_params)
+    response = requests.get("https://api.musixmatch.com/ws/1.1/track.search", params=track_params, headers=headers)
     response.raise_for_status()
     track_data = response.json()
     track_list = track_data["message"]["body"]["track_list"]
