@@ -13,25 +13,25 @@ class Keyboard():
         self.start_markup.row("⬇️ Hide command buttons")
         self.start_markup.row('/artist', '/song')
         self.start_markup.row('/commands', '/ping')
+
     def _make_sub_lists(self, list_of_type, items_per_page):
         items_per_page = 5
         lists = []
-        
+
         for i in range(0, len(list_of_type), items_per_page):
-            sublist = list_of_type[i:i + items_per_page] 
+            sublist = list_of_type[i:i + items_per_page]
             lists.append(sublist)
         return lists
 
-
     def make_for_type(self, list_of_type, current_page):
         try:
-            for key,value in list_of_type.items():
+            for key, value in list_of_type.items():
                 list_of_type = value
                 one_type = key
-        except:
+        except BaseException:
             one_type = None
             pass
-        pages_list = self._make_sub_lists(list_of_type,5)
+        pages_list = self._make_sub_lists(list_of_type, 5)
         keyboard = types.InlineKeyboardMarkup()
         if len(list_of_type) == 0:
             pass
@@ -45,17 +45,17 @@ class Keyboard():
                     f"{name}", callback_data=uri)
                 keyboard.add(button)
         next = types.InlineKeyboardButton(
-            "Next >>", callback_data=f'_n_{artist}_{one_type}_{current_page}')        
+            "Next >>", callback_data=f'_n_{artist}_{one_type}_{current_page}')
         previous = types.InlineKeyboardButton(
-            "<< Previous", callback_data=f'_p_{artist}_{one_type}_{current_page}')            
+            "<< Previous", callback_data=f'_p_{artist}_{one_type}_{current_page}')
         close = types.InlineKeyboardButton(
             "Close", callback_data=f'close_make')
-        number_of_pages = len(pages_list)-1
+        number_of_pages = len(pages_list) - 1
         if not current_page == number_of_pages and current_page < number_of_pages:
             keyboard.add(next)
         if current_page > 0:
             keyboard.add(previous)
-        keyboard.add(close)     
+        keyboard.add(close)
         return keyboard
 
     def lyrics_handler(self, artists, uri):
@@ -68,13 +68,15 @@ class Keyboard():
     def view_handler(self, name, lengths):
         keyboard = types.InlineKeyboardMarkup()
         top_tracks_button = types.InlineKeyboardButton(
-            f"Top Tracks🔝", callback_data=f"toptracks_{name}")        
+            f"Top Tracks🔝", callback_data=f"toptracks_{name}")
         keyboard.add(top_tracks_button)
         type = ['single', 'album', 'compilation']
-        for idx,item in enumerate(lengths):
-            if (item>0):
+        for idx, item in enumerate(lengths):
+            if (item > 0):
                 button = types.InlineKeyboardButton(
                     f"View {name}'s {type[idx].title()}s🧐", callback_data=f"{type[idx]}_{name}")
-                keyboard.row(button)                
+                keyboard.row(button)
         return keyboard
+
+
 keyboard = Keyboard()

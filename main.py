@@ -7,10 +7,12 @@ from telebot import util
 from audio import Audio
 from spotify import Spotify
 from keyboards import Keyboard
-from get_lyrics import lyrics_extractor_lyrics, musicxmatch_lyrics
+from get_lyrics import lyrics_extractor_lyrics, musicxmatch_lyrics, lyricsgenius_lyrics
 from config import TELEGRAM_BOT_TOKEN
-from logging_config import logger
+import logging_config
 
+
+logger = logging_config.logger
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN), parse_mode='markdown')
 base_url = "https://open.spotify.com/track/"
 MAX_RETRIES = 5
@@ -134,7 +136,10 @@ def search_artist(message) -> None:
             reply_markup=keyboard.start_markup)
         return
     caption = f'👤Artist: `{artist_details["name"]}`\n🧑Followers: `{artist_details["followers"]:,}` \n🎭Genre(s): `{", ".join(artist_details["genres"])}` \n'
-    lists_of_type = [artist_details["artist_singles"]["single"], artist_details["artist_albums"]["album"],artist_details["artist_compilations"]["compilation"]]
+    lists_of_type = [
+        artist_details["artist_singles"]["single"],
+        artist_details["artist_albums"]["album"],
+        artist_details["artist_compilations"]["compilation"]]
     lengths = [len(item) for item in lists_of_type]
     pin = bot.send_photo(
         message.chat.id,
@@ -156,7 +161,7 @@ def send_song_data(message):
 def send_audios_or_previews(track_details, caption, chat_id, send_photo):
     track_url = track_details['external_url']
     reply_markup = keyboard.lyrics_handler(
-            track_details['name'], track_details['uri'])
+        track_details['name'], track_details['uri'])
     if send_photo:
         time.sleep(1)
         bot.send_photo(
@@ -223,15 +228,16 @@ def get_album_songs(uri, chat_id):
 
 
 def send_checker(list_of_type, chat_id, current_page=0):
-    reply_markup=keyboard.make_for_type(list_of_type, current_page)
+    reply_markup = keyboard.make_for_type(list_of_type, current_page)
     try:
         board = keyboards_list[0]["keyboard"]
-        bot.edit_message_reply_markup(chat_id,board.message_id,reply_markup=reply_markup)
-    except:
+        bot.edit_message_reply_markup(
+            chat_id, board.message_id, reply_markup=reply_markup)
+    except BaseException:
         make = bot.send_message(
             chat_id,
-            "Awesome which ones tracks do you want to get?",reply_markup=reply_markup
-            )
+            "Awesome which ones tracks do you want to get?", reply_markup=reply_markup
+        )
         make_dict = {"name": 'make', "keyboard": make}
         keyboards_list.append(make_dict)
 
@@ -264,7 +270,7 @@ def handle_text(message):
 
 
 def process_callback_query(call):
-    # try:
+    try:
         data = call.data
         if data.startswith('album') or data.startswith('single') or data.startswith(
                 'compilation') or data.startswith('toptracks'):
@@ -276,15 +282,15 @@ def process_callback_query(call):
         elif data.startswith("close"):
             handle_close_callback(call)
         elif data.startswith("_"):
-            handle_pagination_callback(call)                    
+            handle_pagination_callback(call)
         else:
             uri = call.data
             get_album_songs(uri, call.message.chat.id)
-    # except Exception as e:
-    #     logger.error(f"Error processing callback query: {str(e)}")
-    #     bot.send_message(
-    #         call.message.chat.id,
-    #         "`An error occurred while processing your request. Please try again later.`")
+    except Exception as e:
+        logger.error(f"Error processing callback query: {str(e)}")
+        bot.send_message(
+            call.message.chat.id,
+            "`An error occurred while processing your request. Please try again later.`")
 
 
 def handle_list_callback(call):
@@ -301,6 +307,7 @@ def handle_list_callback(call):
 def handle_top_tracks_callback(call):
     send_top_songs(call)
 
+
 def handle_pagination_callback(call):
     handle = call.data.split('_')[1]
     artist = call.data.split('_')[2]
@@ -310,13 +317,13 @@ def handle_pagination_callback(call):
     if type is None or "artist_Nones":
         list_of_type = artist_details[f"top_songs"]
     else:
-        list_of_type = artist_details[f"artist_{type}s"]    
+        list_of_type = artist_details[f"artist_{type}s"]
     if handle == 'n':
-        page = int(page)+1
-        send_checker(list_of_type,call.message.chat.id, page)
+        page = int(page) + 1
+        send_checker(list_of_type, call.message.chat.id, page)
     if handle == 'p':
-        page = int(page)-1
-        send_checker(list_of_type,call.message.chat.id, page)
+        page = int(page) - 1
+        send_checker(list_of_type, call.message.chat.id, page)
 
 
 def handle_lyrics_callback(call):
@@ -324,13 +331,19 @@ def handle_lyrics_callback(call):
     track_details = spotify.song("", "", uri)
     artist = ', '.join(track_details['artists'])
     title = track_details["name"]
-    # try:
-        # logger.info("Searching by Lyrics Extractor")
-        # pass
-        # lyrics = lyrics_extractor_lyrics(artist,title)
-    # except:
-    logger.info("Searching by MusixMatch")
-    lyrics = musicxmatch_lyrics(artist,title)
+    try:
+        logger.info("Searching by Lyrics Extractor")
+        lyrics = lyrics_extractor_lyrics(artist, title)
+    except BaseException:
+        try:
+            logger.info("Searching by Musicxmatch Extractor")
+            lyrics = musicxmatch_lyrics(artist, title)
+        except BaseException:
+            try:
+                logger.info("Searching by LyricsGenius Extractor")
+                lyrics = lyricsgenius_lyrics(artist, title)
+            except BaseException:
+                lyrics = lyricsgenius_lyrics(artist, title)
     caption = f"👤Artist: `{', '.join(track_details['artists'])}`\n🎵Song : `{track_details['name']}`\n━━━━━━━━━━━━\n📀Album : `{track_details['album']}`\n🔢Track : {track_details['track_no']} of {track_details['total_tracks']}\n⭐️ Released: `{track_details['release_date']}`\n\n🎶Lyrics📝:\n\n`{lyrics}`"
     try:
         bot.send_message(

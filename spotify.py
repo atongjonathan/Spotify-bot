@@ -4,6 +4,7 @@ from logging_config import logger
 from spotipy.oauth2 import SpotifyClientCredentials
 import json
 
+
 class Spotify():
     SPOTIPY_CLIENT_ID = SPOTIPY_CLIENT_ID
     SPOTIPY_CLIENT_SECRET = SPOTIPY_CLIENT_SECRET
@@ -49,17 +50,20 @@ class Spotify():
         artist_details = self.additional_details(artist_details)
         return artist_details
 
-
     def additional_details(self, artist_details):
-        types = ["album","single", "compilation"]
+        types = ["album", "single", "compilation"]
         for one_type in types:
             key = f"artist_{one_type}s"
             artist_details[f"{key}"] = self.sp.artist_albums(
-                    artist_details['uri'], album_type=f'{one_type}')
+                artist_details['uri'], album_type=f'{one_type}')
             artist_details[f"{key}"] = (artist_details[f"{key}"]["items"])
-            artist_details[key] = {f"{one_type}":[{"artist": artist_details["name"],"name": item['name'], "uri":item['uri']} for item in artist_details[key]]}
+            artist_details[key] = {
+                f"{one_type}": [
+                    {
+                        "artist": artist_details["name"],
+                        "name": item['name'],
+                        "uri":item['uri']} for item in artist_details[key]]}
         return artist_details
-
 
     def song(self, artist, title, uri) -> dict:
         if uri is not None:
