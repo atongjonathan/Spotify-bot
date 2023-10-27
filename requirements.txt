@@ -7,3 +7,5 @@ pytube
 moviepy
 lyrics_extractor
 lyricsgenius
+google-api-python-client
+yt_dlp

@@ -162,6 +162,8 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
     track_url = track_details['external_url']
     reply_markup = keyboard.lyrics_handler(
         track_details['name'], track_details['uri'])
+    artist = ', '.join(track_details['artists'])
+    title = track_details["name"]
     if send_photo:
         time.sleep(1)
         bot.send_photo(
@@ -170,19 +172,21 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
             caption=caption,
             reply_markup=keyboard.start_markup)
     update = bot.send_message(chat_id, "... Downloading song just a sec ...")
-    data = None
-    # query = f"{name} {artist}"
-    # data = audio.download_webm(f"{query}", name)
-    bot.edit_message_text(
-        "Adding metadata😇...",
-        chat_id=chat_id,
-        message_id=update.message_id)
+    query = f"{title} {artist}"
+    url = audio.search(f"{query}")
+    data = audio.download_webm(url)
     if data is not None:
-        files = [f for f in os.listdir(
-            '.') if os.path.isfile(f) and f.endswith('.mp3')]
-        audio.set_metadata(artist, track_details["release_date"], track_details["album"],
-                           track_details["name"], track_details["track_no"], track_details["images"], files[0])
-        path = files[0]
+        # bot.edit_message_text(
+        # "Adding metadata😇...",
+        # chat_id=chat_id,
+        # message_id=update.message_id)
+        for f in os.listdir('.'):
+            if os.path.isfile(f) and f.endswith('.webm'):
+                new_name = f.replace('.webm', '.mp3')
+                os.rename(f, new_name) 
+
+        path = new_name
+        # audio.set_metadata(track_details, path)
         with open(path, "rb") as file:
             bot.send_chat_action(chat_id, "upload_audio")
             bot.send_audio(chat_id, audio=file, title=f'{track_details["name"]}', performer=track_details["artists"],
@@ -287,10 +291,11 @@ def process_callback_query(call):
             uri = call.data
             get_album_songs(uri, call.message.chat.id)
     except Exception as e:
-        logger.error(f"Error processing callback query: {str(e)}")
-        bot.send_message(
-            call.message.chat.id,
-            "`An error occurred while processing your request. Please try again later.`")
+        pass
+        # logger.error(f"Error processing callback query: {str(e)}")
+        # bot.send_message(
+        #     call.message.chat.id,
+        #     "`An error occurred while processing your request. Please try again later.`")
 
 
 def handle_list_callback(call):

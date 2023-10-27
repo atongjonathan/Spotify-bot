@@ -1,57 +1,72 @@
 from pytube import YouTube
 import os
 import re
-from mutagen.easyid3 import EasyID3
-from mutagen.id3 import APIC, ID3
+from mutagen.mp3 import MP3
+from mutagen.id3 import ID3, APIC, error
 import urllib.request
+import googleapiclient.discovery
+import os
+from config import YOUTUBE_API_KEY
+import yt_dlp
+import eyed3
+from eyed3.id3.frames import ImageFrame
+
+
+options = {
+    "format" : "bestaudio[ext=mp3]/bestaudio/best"
+}
+ytdl = yt_dlp.YoutubeDL(options)
+# Define your API key and service name
+# api_key = "YOUR_API_KEY"
+api_service_name = "youtube"
+api_version = "v3"
+
+# Create a YouTube API client
+youtube = googleapiclient.discovery.build(api_service_name, api_version, developerKey=YOUTUBE_API_KEY)
+
+
 
 
 class Audio():
-    def download_webm(self, query, title):
-        # Define a regular expression pattern to match non-English letters
-        non_english_pattern = re.compile(r'[^\x00-\x7F]+')
-        # Replace non-English letters with an empty string
-        cleaned_string = non_english_pattern.sub('', query)
-        # Decode the encoded string to get a printable string
-        query = cleaned_string.replace(" ", "%20")
-        base_url = "https://www.youtube.com/results?search_query="
-        response = urllib.request.urlopen(f"{base_url}{query}")
-        soup = response.read().decode()
-        search_results = re.findall(r"watch\?v=(\S{11})", soup)
-        for url in (search_results[:5]):
-            yt_base = f"https://www.youtube.com/watch?v={url}"
-            yt = YouTube(yt_base)
-            if yt.length < 100 or yt.length > 300:
-                pass
-            else:
-                best_uri = url
-        vid_url = best_uri
-        for file in os.listdir("."):
-            if os.path.isfile(file) and file.endswith(".mp3"):
-                return file
-        return None
+    def search(sself, search_query):# Define your search query
+    # Perform the search
+        search_response = youtube.search().list(
+            q=search_query,
+            type="video",
+            part="id",
+            maxResults=10  # You can adjust the number of results you want to retrieve
+        ).execute()
 
-    def set_metadata(albumartist, artist, date, album,
-                     title, tracknumber, photo, file_path):
+        # Extract the video IDs from the search results
+        video_ids = [item['id']['videoId'] for item in search_response.get('items', [])]
+        vid_id = video_ids[0]
+
+        url = f"https://www.youtube.com/watch?v={vid_id}"
+        return url
+
+
+    def download_webm(self, url):
+        ytdl.download([url])
+        return True
+
+    def set_metadata(self, track_details, file_path):
         """adds metadata to the downloaded mp3 file"""
-        mp3file = EasyID3(file_path)
-        # add metadata
-        mp3file["albumartist"] = artist
-        mp3file["artist"] = artist
-        mp3file["album"] = album
-        mp3file["title"] = title
-        mp3file["date"] = date
-        mp3file["tracknumber"] = str(tracknumber)
-        mp3file.save()
-
-        # add album cover
-        audio = ID3(file_path)
-        with urllib.request.urlopen(photo) as albumart:
-            audio["APIC"] = APIC(
-                encoding=3, mime="image/jpeg", type=3, desc="Cover", data=albumart.read()
-            )
-        # Create a USLT frame with lyrics
-
-        # Add the USLT frame to the ID3 tags
-        audio.save(v2_version=3)
+        artist = track_details["artists"][0]
+        album_artist = artist
+        date = track_details["release_date"]
+        album = track_details["album"]
+        title = track_details["name"]
+        track_number = track_details["name"]
+        image = track_details["image"]
+        audio = MP3(file_path, ID3=ID3)
+        try:
+            audio.add_tags()
+        except error:
+            pass
+        audio.tags.add(APIC(mime='image/jpeg',type=3,desc=u'Cover',data=open(image,'rb').read()))
+        # edit ID3 tags to open and read the picture from the path specified and assign it
+        audio.save() 
         return audio
+
+# save the changes
+
