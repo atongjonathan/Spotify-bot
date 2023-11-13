@@ -128,3 +128,13 @@ class Spotify():
                 "uri":item['uri'],
                 "artists":item["artists"][0]["name"]} for item in items]
         return album_details
+
+    def get_top_10(self, top_10):
+        top_tracks = [
+            self.song(
+                item["song"],
+                item["title"],
+                None) for item in top_10]
+        top_songs = [{"name": track['name'], "uri":track['uri'],
+                      "artist": track["artists"][0]} for track in top_tracks]
+        return top_songs

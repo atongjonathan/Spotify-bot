@@ -1,6 +1,6 @@
 telebot
 requests
-beautifulsoup4
+bs4
 spotipy
 mutagen
 pytube
@@ -8,4 +8,3 @@ moviepy
 lyrics_extractor
 lyricsgenius
 google-api-python-client
-yt_dlp
