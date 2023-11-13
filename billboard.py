@@ -16,7 +16,7 @@ def get_saturday_date():
 
     next_sat = today + datetime.timedelta(days=interval)
     prev_sat = next_sat - datetime.timedelta(days=7)
-    date = f"{2022}-{prev_sat.month}-{prev_sat.day}"
+    date = f"{prev_sat.year}-{prev_sat.month}-{prev_sat.day}"
     return date
 
 

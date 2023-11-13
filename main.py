@@ -265,7 +265,7 @@ def handle_lyrics_callback(call):
                 logger.info("Searching by LyricsGenius Extractor")
                 lyrics = lyricsgenius_lyrics(artist, title)
             except BaseException:
-                lyrics = lyricsgenius_lyrics(artist, title)
+                lyrics = musicxmatch_lyrics(artist, title)
     caption = f"👤Artist: `{', '.join(track_details['artists'])}`\n🎵Song : `{track_details['name']}`\n━━━━━━━━━━━━\n📀Album : `{track_details['album']}`\n🔢Track : {track_details['track_no']} of {track_details['total_tracks']}\n⭐️ Released: `{track_details['release_date']}`\n\n🎶Lyrics📝:\n\n`{lyrics}`"
     try:
         bot.send_message(
@@ -337,10 +337,15 @@ def get_song(message):
 @bot.message_handler(commands=["top_songs"])
 def top_songs(message):
     top_100 = get_billboard_hot_100()
-    top_10 = top_100[:9]
-    list_of_type = (spotify.get_top_10(top_10))
-    send_checker(list_of_type, message.chat.id)
-    # bot.send_message(message.chat.id, str(top_100))
+    # top_10 = top_100[:9]
+    long = ""
+    for index,item in enumerate(top_100):
+        long = f"{long}\n`{index+2}. {item['song']}-{item['title']}`\n"
+    # list_of_type = (spotify.get_top_10(top_10))
+    # send_checker(list_of_type, message.chat.id)
+    edit = bot.send_message(message.chat.id, "Searching ... ⏳")
+    bot.send_message(message.chat.id, long)
+    bot.delete_message(message.chat.id, edit.message_id)
 
 
 @bot.message_handler(commands=['commands'])
