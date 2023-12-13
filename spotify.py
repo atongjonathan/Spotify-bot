@@ -1,8 +1,9 @@
 import spotipy
 from config import SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET
-from logging_config import logger
 from spotipy.oauth2 import SpotifyClientCredentials
 import json
+from logging import getLogger
+logger = getLogger(__name__)
 
 
 class Spotify():

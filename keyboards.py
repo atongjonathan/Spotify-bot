@@ -28,7 +28,7 @@ class Keyboard():
             for key, value in list_of_type.items():
                 list_of_type = value
                 one_type = key
-        except BaseException:
+        except Exception as e:
             one_type = None
             pass
         pages_list = self._make_sub_lists(list_of_type, 5)
@@ -37,7 +37,7 @@ class Keyboard():
             pass
         else:
             page = pages_list[current_page]
-            for idx, album in enumerate(page):
+            for album in page:
                 name = album["name"]
                 uri = album["uri"]
                 artist = album["artist"]
@@ -50,7 +50,7 @@ class Keyboard():
             "<< Previous", callback_data=f'_p_{artist}_{one_type}_{current_page}')
         close = types.InlineKeyboardButton(
             "Close", callback_data=f'close_make')
-        number_of_pages = len(pages_list) - 1
+        number_of_pages = len(pages_list)-1
         if not current_page == number_of_pages and current_page < number_of_pages:
             keyboard.add(next)
         if current_page > 0:

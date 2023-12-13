@@ -2,23 +2,22 @@ from lyrics_extractor import SongLyrics
 from config import GCS_API_KEY, GCS_ENGINE_ID, MUSICXMATCH_API_KEY, GENIUS_ACCESS_TOKEN
 import requests
 from lyricsgenius import Genius
-import logging_config
 from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
 import re
+from logging import getLogger
 
-logger = logging_config.logger
+logger = getLogger(__name__)
 
+headers = {
+    "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"
+}
 
 def azlyrics(artist, title):
     artist = (re.sub(r'[^\x00-\x7F]+', '', artist)).replace(" ", '')
     title = (re.sub(r'[^\x00-\x7F]+', '', title)).replace(" ", '')
     base_url = f"https://www.azlyrics.com/lyrics/{artist.strip().lower()}/{title.strip().lower()}.html"
-    print(base_url)
-    headers = {
-        "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"
-    }
     request = Request(base_url, headers=headers)
     response = urlopen(request)
     html_page = response.read()
@@ -46,10 +45,6 @@ def lyrics_extractor_lyrics(artist, title):
 
 
 def musicxmatch_lyrics(artist, title):
-    headers = {
-        "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"
-    }
     lyrics_params = {"apikey": MUSICXMATCH_API_KEY}
     track_params = lyrics_params
     track_params["q_track"] = f"{title}"
@@ -75,4 +70,5 @@ def musicxmatch_lyrics(artist, title):
     except BaseException:
         return None
 
- #print(azlyrics(artist="pinkpantheress", title="capable of love"))
+# print(lyrics_extractor_lyrics(artist="pinkpantheress",
+#                               title="capable of love"))

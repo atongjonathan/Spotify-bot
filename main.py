@@ -3,17 +3,24 @@ import requests
 import os
 from io import BytesIO
 import time
-from telebot import util
+from telebot import util,types
 from spotify import Spotify
 from keyboards import Keyboard
 from get_lyrics import azlyrics, lyrics_extractor_lyrics, musicxmatch_lyrics, lyricsgenius_lyrics
 from config import TELEGRAM_BOT_TOKEN
-import logging_config
 from billboard import get_billboard_hot_100
 import json
+import warnings
+from logging import FileHandler, StreamHandler, INFO, basicConfig, getLogger
+
+basicConfig(format='%(levelname)s | %(asctime)s - %(name)s - line %(lineno)d | %(message)s',
+            handlers=[FileHandler('logs.txt'), StreamHandler()], level=INFO)
+logger = getLogger(__name__)
+
+# Filter out specific warnings from spotipy.cache_handler
+warnings.filterwarnings("ignore", category=UserWarning, module="spotipy.cache_handler")
 
 
-logger = logging_config.logger
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN), parse_mode='markdown')
 base_url = "https://open.spotify.com/track/"
 MAX_RETRIES = 5
@@ -162,7 +169,7 @@ def get_album_songs(uri, chat_id):
             chat_id, f'Those are all the {track_details["total_tracks"]} track(s) in "`{album_details["name"]}`" by `{artist}`. 💪!', reply_markup=keyboard.start_markup)
 
 
-def send_checker(list_of_type, chat_id, current_page=0):
+def send_checker(list_of_type, chat_id, current_page):
     reply_markup = keyboard.make_for_type(list_of_type, current_page)
     try:
         board = keyboards_list[0]["keyboard"]
@@ -223,7 +230,7 @@ def handle_list_callback(call):
         artist_list = artist_details["top_songs"]
     else:
         artist_list = artist_details[f"artist_{type}s"]
-    send_checker(artist_list, call.message.chat.id)
+    send_checker(artist_list, call.message.chat.id, 0)
 
 
 def handle_top_tracks_callback(call):
@@ -233,17 +240,17 @@ def handle_top_tracks_callback(call):
 def handle_pagination_callback(call):
     handle = call.data.split('_')[1]
     artist = call.data.split('_')[2]
-    type = call.data.split('_')[3]
+    of_type = call.data.split('_')[3]
     page = call.data.split('_')[4]
     artist_details = spotify.artist(artist)
-    if type is None or "artist_Nones":
+    if of_type == None or of_type=="artist_Nones":
         list_of_type = artist_details[f"top_songs"]
     else:
-        list_of_type = artist_details[f"artist_{type}s"]
+        list_of_type = artist_details[f"artist_{of_type}s"]
     if handle == 'n':
         page = int(page) + 1
         send_checker(list_of_type, call.message.chat.id, page)
-    if handle == 'p':
+    elif handle == 'p':
         page = int(page) - 1
         send_checker(list_of_type, call.message.chat.id, page)
 
@@ -356,13 +363,13 @@ def info(message):
 # /topsongs - Get top 10 tracks in the world")
 
 
-@bot.message_handler(commands=['log'])
+@bot.message_handler(commands=['logs'])
 def get_logs(message):
-    with open('logs.txt') as file:
-        bot.send_document(
-            message.chat.id,
-            file,
-            reply_markup=keyboard.start_markup)
+   
+    file = open("logs.txt")
+    bot.send_document(message.chat.id, file, reply_markup=keyboard.start_markup)
+    file.close()
+
 
 
 @bot.message_handler(commands=['ping'])
@@ -395,6 +402,7 @@ def handle_text(message):
 # Set up a callback query handler
 @bot.callback_query_handler(func=lambda call: True)
 def handle_query(call):
+    bot.answer_callback_query(call.id)
     process_callback_query(call)
 
 

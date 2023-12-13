@@ -6,3 +6,4 @@ __pycache__
 speed.py
 Z_Logs.txt
 logs.txt
+.env
