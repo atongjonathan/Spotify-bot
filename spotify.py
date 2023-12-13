@@ -29,7 +29,9 @@ class Spotify():
         artist_details['top_songs'] = [
             {"name": track['name'], "uri":track['uri'], "artist_uri": track["album"]["artists"][0]["uri"]} for track in top_tracks]
         artist_details = self.additional_details(artist_details)
-        return artist_details        
+        return artist_details
+
+
     def artist(self, name: str) -> list:
         """Get all possible details of an artist"""
         name = name.lower()
@@ -43,14 +45,10 @@ class Spotify():
             key=lambda person: person["popularity"],
             reverse=True)
         artist_results = []
-        # chosen_artist = None
         for artist in most_popular:
             if name in str(artist["name"]).lower():
                 artist_results.append(artist)
         
-        # if chosen_artist is None:
-        #     return
-
         artists_data = []
         for artist in artist_results:
             artist_details = {
@@ -59,23 +57,6 @@ class Spotify():
                 'followers': f'{artist["followers"]["total"]:,}'
             }
             artists_data.append(artist_details)
-        # for artist in artist_results:
-        #     images_data = artist["images"]
-        #     artist_details = {
-        #         'uri': artist["uri"],
-        #         'followers': artist["followers"]["total"],
-        #         'images': [item["url"] for item in images_data][0],
-        #         'name': artist["name"],
-        #         'genres': [genre.title() for genre in artist["genres"]],
-        #     }
-        #     top_tracks = self.sp.artist_top_tracks(artist_details["uri"])['tracks']
-        #     artist_details['top_songs'] = [
-        #         {"name": track['name'], "uri":track['uri'], "artist": track["album"]["artists"][0]["name"]} for track in top_tracks]
-        #     artist_details = self.additional_details(artist_details)
-        #     artists_data.append(artist_details)
-
-
-        # return self.top_songs,self.top_tracks['tracks'][:no_of_tracks]
         return artists_data
 
 
@@ -94,17 +75,8 @@ class Spotify():
                         "uri":item['uri']} for item in artist_details[key]]}
         return artist_details
 
-    def song(self, artist, title, uri) -> dict:
-        if uri is not None:
-            chosen_song = self.sp.track(uri)
-        else:
-            """Get all possible details of an track"""
-            track_data = self.sp.search(q=f"{artist} {title}", type="track")
-            possible_tracks = track_data["tracks"]["items"]
-            if len(possible_tracks) == 0:
-                logger.info(f"No tracks found for {artist}, {title}")
-                return
-            chosen_song = possible_tracks[0]
+    def get_chosen_song(self, uri):
+        chosen_song = self.sp.track(uri)
         track_details = {
             'id': chosen_song["id"],
             'artists': [artist["name"] for artist in chosen_song["album"]["artists"]],
@@ -125,7 +97,24 @@ class Spotify():
             track_details['image'] = "https://cdn.business2community.com/wp-content/uploads/2014/03/Unknown-person.gif"
             logger.info(f"No image found for track {track_details['name']}")
 
-        return track_details
+        return track_details        
+    def song(self, artist, title) -> list:
+        """Get all possible details of an track"""
+        track_data = self.sp.search(q=f"{artist} {title}", type="track")
+        possible_tracks = track_data["tracks"]["items"]
+        track_results = []
+        if len(possible_tracks) == 0:
+            logger.info(f"No tracks found for {artist}, {title}")
+            return        
+        for track in possible_tracks:
+            track_details = {
+            'artists': ', '.join([artist["name"] for artist in track["album"]["artists"]]),
+            'name': track["name"],
+            'uri': track["uri"]
+            }
+            track_results.append(track_details)
+        return track_results
+
 
     def album(self, artist, title, uri) -> dict:
         if uri is not None:
@@ -167,6 +156,3 @@ class Spotify():
         top_songs = [{"name": track['name'], "uri":track['uri'],
                       "artist": track["artists"][0]} for track in top_tracks]
         return top_songs
-
-# spotify = Spotify()
-# print((spotify.artist("Ariana"))[0])
