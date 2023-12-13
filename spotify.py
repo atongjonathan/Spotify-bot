@@ -15,6 +15,7 @@ class Spotify():
     def __init__(self) -> None:
         self.sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=SPOTIPY_CLIENT_ID,
                                                                         client_secret=SPOTIPY_CLIENT_SECRET))
+
     def get_chosen_artist(self, uri):
         chosen_artist = self.sp.artist(uri)
         images_data = chosen_artist["images"]
@@ -30,7 +31,6 @@ class Spotify():
             {"name": track['name'], "uri":track['uri'], "artist_uri": track["album"]["artists"][0]["uri"]} for track in top_tracks]
         artist_details = self.additional_details(artist_details)
         return artist_details
-
 
     def artist(self, name: str) -> list:
         """Get all possible details of an artist"""
@@ -48,7 +48,7 @@ class Spotify():
         for artist in most_popular:
             if name in str(artist["name"]).lower():
                 artist_results.append(artist)
-        
+
         artists_data = []
         for artist in artist_results:
             artist_details = {
@@ -58,7 +58,6 @@ class Spotify():
             }
             artists_data.append(artist_details)
         return artists_data
-
 
     def additional_details(self, artist_details):
         types = ["album", "single", "compilation"]
@@ -97,7 +96,8 @@ class Spotify():
             track_details['image'] = "https://cdn.business2community.com/wp-content/uploads/2014/03/Unknown-person.gif"
             logger.info(f"No image found for track {track_details['name']}")
 
-        return track_details        
+        return track_details
+
     def song(self, artist, title) -> list:
         """Get all possible details of an track"""
         track_data = self.sp.search(q=f"{artist} {title}", type="track")
@@ -105,16 +105,15 @@ class Spotify():
         track_results = []
         if len(possible_tracks) == 0:
             logger.info(f"No tracks found for {artist}, {title}")
-            return        
+            return
         for track in possible_tracks:
             track_details = {
-            'artists': ', '.join([artist["name"] for artist in track["album"]["artists"]]),
-            'name': track["name"],
-            'uri': track["uri"]
+                'artists': ', '.join([artist["name"] for artist in track["album"]["artists"]]),
+                'name': track["name"],
+                'uri': track["uri"]
             }
             track_results.append(track_details)
         return track_results
-
 
     def album(self, artist, title, uri) -> dict:
         if uri is not None:

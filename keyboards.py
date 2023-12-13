@@ -22,17 +22,17 @@ class Keyboard():
             sublist = list_of_type[i:i + items_per_page]
             lists.append(sublist)
         return lists
-    
+
     def keyboard_for_results(self, results):
         keyboard = types.InlineKeyboardMarkup(row_width=4)
         close = types.InlineKeyboardButton(
             "Close", callback_data=f'close_make')
-        for idx,result in enumerate(results):
-            button = types.InlineKeyboardButton(str(idx+1), callback_data=f"r_{result['uri']}")
+        for idx, result in enumerate(results):
+            button = types.InlineKeyboardButton(
+                str(idx + 1), callback_data=f"r_{result['uri']}")
             keyboard.row(button)
         keyboard.row(close)
         return keyboard
-
 
     def make_for_type(self, list_of_type, current_page):
         try:
@@ -61,7 +61,7 @@ class Keyboard():
             "<< Previous", callback_data=f'_p_{artist_uri}_{one_type}_{current_page}')
         close = types.InlineKeyboardButton(
             "Close", callback_data=f'close_make')
-        number_of_pages = len(pages_list)-1
+        number_of_pages = len(pages_list) - 1
         if not current_page == number_of_pages and current_page < number_of_pages:
             keyboard.add(next)
         if current_page > 0:

@@ -3,7 +3,7 @@ import requests
 import os
 from io import BytesIO
 import time
-from telebot import util,types
+from telebot import util, types
 from spotify import Spotify
 from keyboards import Keyboard
 from get_lyrics import azlyrics, lyrics_extractor_lyrics, musicxmatch_lyrics, lyricsgenius_lyrics
@@ -18,7 +18,10 @@ basicConfig(format='%(levelname)s | %(asctime)s - %(name)s - line %(lineno)d | %
 logger = getLogger(__name__)
 
 # Filter out specific warnings from spotipy.cache_handler
-warnings.filterwarnings("ignore", category=UserWarning, module="spotipy.cache_handler")
+warnings.filterwarnings(
+    "ignore",
+    category=UserWarning,
+    module="spotipy.cache_handler")
 
 
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN), parse_mode='markdown')
@@ -81,10 +84,16 @@ def search_artist(message) -> None:
             f"Artist `{message.text}` not found!⚠. Please check your spelling and also include special characters.\nTry again? /artist",
             reply_markup=keyboard.start_markup)
         return
-    result_string = [f"{idx+1}. `{item['name']}` ~ Followers: {item['followers']}" for idx,item in enumerate(artist_results)]
+    result_string = [
+        f"{idx+1}. `{item['name']}` ~ Followers: {item['followers']}" for idx,
+        item in enumerate(artist_results)]
     result_string = '\n'.join(result_string)
     artists_keyboard = keyboard.keyboard_for_results(results=artist_results)
-    bot.send_message(message.chat.id, f"Found {no_of_results}result(s) from the search `{message.text}` ~ {message.from_user.first_name}\n\n{result_string}", reply_markup=artists_keyboard)
+    bot.send_message(
+        message.chat.id,
+        f"Found {no_of_results}result(s) from the search `{message.text}` ~ {message.from_user.first_name}\n\n{result_string}",
+        reply_markup=artists_keyboard)
+
 
 def send_chosen_artist(artist_details, message):
     caption = f'👤Artist: `{artist_details["name"]}`\n🧑Followers: `{artist_details["followers"]:,}` \n🎭Genre(s): `{", ".join(artist_details["genres"])}` \n'
@@ -179,14 +188,14 @@ def send_checker(list_of_type, chat_id, current_page):
     reply_markup = keyboard.make_for_type(list_of_type, current_page)
     global make_id
     try:
-        bot.edit_message_reply_markup(chat_id, make_id,reply_markup=reply_markup)
+        bot.edit_message_reply_markup(
+            chat_id, make_id, reply_markup=reply_markup)
     except Exception:
         make = bot.send_message(
             chat_id,
             "Awesome which ones tracks do you want to get?", reply_markup=reply_markup
         )
         make_id = make.id
-
 
 
 def check_input(message):
@@ -236,22 +245,23 @@ def handle_list_callback(call):
 def handle_top_tracks_callback(call):
     send_top_songs(call)
 
+
 def handle_result_callback(call):
     uri = call.data.split("_")[1]
     try:
         artist_details = spotify.get_chosen_artist(uri)
         send_chosen_artist(artist_details, call.message)
-    except:
+    except BaseException:
         track_details = spotify.get_chosen_song(uri)
         send_chosen_track(track_details, call.message)
-    
+
 
 def handle_pagination_callback(call):
     handle = call.data.split('_')[1]
     artist = call.data.split('_')[2]
     of_type = call.data.split('_')[3]
     page = call.data.split('_')[4]
-    artist_details = spotify.get_chosen_artist(artist)    
+    artist_details = spotify.get_chosen_artist(artist)
     if of_type:
         list_of_type = artist_details[f"top_songs"]
     else:
@@ -295,9 +305,9 @@ def handle_lyrics_callback(call):
         for text in splitted_text:
             try:
                 bot.send_message(
-                call.message.chat.id,
-                text=text,
-                reply_markup=keyboard.start_markup)
+                    call.message.chat.id,
+                    text=text,
+                    reply_markup=keyboard.start_markup)
             except Exception as e:
                 bot.answer_callback_query(call.id, e)
 
@@ -305,9 +315,12 @@ def handle_lyrics_callback(call):
 def handle_close_callback(call):
     bot.delete_message(call.message.chat.id, call.message.id)
 
-def send_chosen_track(track_details,message):
+
+def send_chosen_track(track_details, message):
     caption = f'👤Artist: `{", ".join(track_details["artists"])}`\n🎵Song : `{track_details["name"]}`\n━━━━━━━━━━━━\n📀Album : `{track_details["album"]}`\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n⭐️ Released: `{track_details["release_date"]}`'
     send_audios_or_previews(track_details, caption, message.chat.id, True)
+
+
 @retry_func
 def send_song_data(message):
     artist, title = check_input(message)
@@ -319,11 +332,15 @@ def send_song_data(message):
             f"Song `{message.text}` not found!⚠. Please check your spelling and also include special characters.\nTry again? /song",
             reply_markup=keyboard.start_markup)
         return
-    result_string = [f"{idx+1}. `{item['name']}` ~ Artist(s): {item['artists']}" for idx,item in enumerate(possible_tracks)]
+    result_string = [
+        f"{idx+1}. `{item['name']}` ~ Artist(s): {item['artists']}" for idx,
+        item in enumerate(possible_tracks)]
     result_string = '\n'.join(result_string)
     artists_keyboard = keyboard.keyboard_for_results(results=possible_tracks)
-    bot.send_message(message.chat.id, f"Found {no_of_results} result(s) from the search `{message.text}` ~ {message.from_user.first_name}\n\n{result_string}", reply_markup=artists_keyboard)    
-
+    bot.send_message(
+        message.chat.id,
+        f"Found {no_of_results} result(s) from the search `{message.text}` ~ {message.from_user.first_name}\n\n{result_string}",
+        reply_markup=artists_keyboard)
 
 
 @bot.message_handler(commands=['start'])
@@ -362,7 +379,7 @@ def top_songs(message):
     top_100 = get_billboard_hot_100()
     # top_10 = top_100[:9]
     long = ""
-    for index,item in enumerate(top_100):
+    for index, item in enumerate(top_100):
         long = f"{long}\n`{index+2}. {item['song']}-{item['title']}`\n"
     # list_of_type = (spotify.get_top_10(top_10))
     # send_checker(list_of_type, message.chat.id)
@@ -381,11 +398,13 @@ def info(message):
 
 @bot.message_handler(commands=['logs'])
 def get_logs(message):
-   
-    file = open("logs.txt")
-    bot.send_document(message.chat.id, file, reply_markup=keyboard.start_markup)
-    file.close()
 
+    file = open("logs.txt")
+    bot.send_document(
+        message.chat.id,
+        file,
+        reply_markup=keyboard.start_markup)
+    file.close()
 
 
 @bot.message_handler(commands=['ping'])
