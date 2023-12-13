@@ -25,7 +25,6 @@ bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN), parse_mode='markdown')
 base_url = "https://open.spotify.com/track/"
 MAX_RETRIES = 5
 keyboards_list = []
-
 spotify = Spotify()
 keyboard = Keyboard()
 
@@ -74,13 +73,20 @@ def send_top_songs(call):
 
 
 def search_artist(message) -> None:
-    artist_details = spotify.artist(message.text)
-    if artist_details is None:
+    artist_results = spotify.artist(message.text)
+    no_of_results = len(artist_results)
+    if no_of_results == 0:
         bot.send_message(
             message.chat.id,
             f"Artist `{message.text}` not found!⚠. Please check your spelling and also include special characters.\nTry again? /artist",
             reply_markup=keyboard.start_markup)
         return
+    result_string = [f"{idx+1}. `{item['name']}` ~ Followers: {item['followers']}" for idx,item in enumerate(artist_results)]
+    result_string = '\n'.join(result_string)
+    artists_keyboard = keyboard.keyboard_for_results(results=artist_results)
+    bot.send_message(message.chat.id, f"Found {no_of_results}result(s) from the search `{message.text}` ~ {message.from_user.first_name}\n\n{result_string}", reply_markup=artists_keyboard)
+
+def send_chosen_artist(artist_details, message):
     caption = f'👤Artist: `{artist_details["name"]}`\n🧑Followers: `{artist_details["followers"]:,}` \n🎭Genre(s): `{", ".join(artist_details["genres"])}` \n'
     lists_of_type = [
         artist_details["artist_singles"]["single"],
@@ -92,7 +98,7 @@ def search_artist(message) -> None:
         photo=artist_details["images"],
         caption=caption,
         reply_markup=keyboard.view_handler(
-            artist_details["name"], lengths))
+            artist_details["name"], artist_details["uri"], lengths))
     bot.pin_chat_message(message.chat.id, pin.id)
 
 
@@ -171,17 +177,16 @@ def get_album_songs(uri, chat_id):
 
 def send_checker(list_of_type, chat_id, current_page):
     reply_markup = keyboard.make_for_type(list_of_type, current_page)
+    global make_id
     try:
-        board = keyboards_list[0]["keyboard"]
-        bot.edit_message_reply_markup(
-            chat_id, board.message_id, reply_markup=reply_markup)
-    except BaseException:
+        bot.edit_message_reply_markup(chat_id, make_id,reply_markup=reply_markup)
+    except Exception:
         make = bot.send_message(
             chat_id,
             "Awesome which ones tracks do you want to get?", reply_markup=reply_markup
         )
-        make_dict = {"name": 'make', "keyboard": make}
-        keyboards_list.append(make_dict)
+        make_id = make.id
+
 
 
 def check_input(message):
@@ -198,34 +203,29 @@ def check_input(message):
 
 
 def process_callback_query(call):
-    try:
-        data = call.data
-        if data.startswith('album') or data.startswith('single') or data.startswith(
-                'compilation') or data.startswith('toptracks'):
-            handle_list_callback(call)
-        elif data.startswith("toptracks"):
-            handle_top_tracks_callback(call)
-        elif data.startswith("lyrics"):
-            handle_lyrics_callback(call)
-        elif data.startswith("close"):
-            handle_close_callback(call)
-        elif data.startswith("_"):
-            handle_pagination_callback(call)
-        else:
-            uri = call.data
-            get_album_songs(uri, call.message.chat.id)
-    except Exception as e:
-        pass
-        # logger.error(f"Error processing callback query: {str(e)}")
-        # bot.send_message(
-        #     call.message.chat.id,
-        #     "`An error occurred while processing your request. Please try again later.`")
+    data = call.data
+    if data.startswith('album') or data.startswith('single') or data.startswith(
+            'compilation') or data.startswith('toptracks'):
+        handle_list_callback(call)
+    elif data.startswith("toptracks"):
+        handle_top_tracks_callback(call)
+    elif data.startswith("lyrics"):
+        handle_lyrics_callback(call)
+    elif data.startswith("close"):
+        handle_close_callback(call)
+    elif data.startswith("_"):
+        handle_pagination_callback(call)
+    elif data.startswith("r_"):
+        handle_result_callback(call)
+    else:
+        uri = call.data
+        get_album_songs(uri, call.message.chat.id)
 
 
 def handle_list_callback(call):
     type = call.data.split("_")[0]
-    artist = call.data.split("_")[1]
-    artist_details = spotify.artist(artist)
+    uri = call.data.split("_")[1]
+    artist_details = spotify.get_chosen_artist(uri)
     if type == "toptracks":
         artist_list = artist_details["top_songs"]
     else:
@@ -236,16 +236,21 @@ def handle_list_callback(call):
 def handle_top_tracks_callback(call):
     send_top_songs(call)
 
+def handle_result_callback(call):
+    uri = call.data.split("_")[1]
+    artist_details = spotify.get_chosen_artist(uri)
+    send_chosen_artist(artist_details, call.message)
 
 def handle_pagination_callback(call):
     handle = call.data.split('_')[1]
     artist = call.data.split('_')[2]
     of_type = call.data.split('_')[3]
     page = call.data.split('_')[4]
-    artist_details = spotify.artist(artist)
-    if of_type == None or of_type=="artist_Nones":
+    artist_details = spotify.get_chosen_artist(artist)    
+    if of_type:
         list_of_type = artist_details[f"top_songs"]
     else:
+        print(of_type)
         list_of_type = artist_details[f"artist_{of_type}s"]
     if handle == 'n':
         page = int(page) + 1
@@ -292,14 +297,7 @@ def handle_lyrics_callback(call):
 
 
 def handle_close_callback(call):
-    off = call.data.split("_")[1]
-    if off == "make":
-        for board in keyboards_list:
-            if board["name"] == 'make':
-                keyboards_list.remove(board)
-                bot.delete_message(call.message.chat.id, board["keyboard"].id)
-            if board["name"] == 'handler':
-                bot.delete_message(call.message.chat.id, board["keyboard"].id)
+    bot.delete_message(call.message.chat.id, call.message.id)
 
 
 @retry_func
