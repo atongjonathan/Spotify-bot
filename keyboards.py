@@ -40,7 +40,7 @@ class Keyboard():
                 list_of_type = value
                 one_type = key
         except Exception as e:
-            one_type = True
+            one_type = "toptracks"
             pass
         pages_list = self._make_sub_lists(list_of_type, 5)
         keyboard = types.InlineKeyboardMarkup()

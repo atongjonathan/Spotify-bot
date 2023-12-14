@@ -227,8 +227,7 @@ def process_callback_query(call):
     elif data.startswith("r_"):
         handle_result_callback(call)
     else:
-        uri = call.data
-        get_album_songs(uri, call.message.chat.id)
+        get_album_songs(data, call.message.chat.id)
 
 
 def handle_list_callback(call):
@@ -254,6 +253,7 @@ def handle_result_callback(call):
     except BaseException:
         track_details = spotify.get_chosen_song(uri)
         send_chosen_track(track_details, call.message)
+    bot.delete_message(call.message.chat.id, call.message.id)
 
 
 def handle_pagination_callback(call):
@@ -262,16 +262,16 @@ def handle_pagination_callback(call):
     of_type = call.data.split('_')[3]
     page = call.data.split('_')[4]
     artist_details = spotify.get_chosen_artist(artist)
-    if of_type:
-        list_of_type = artist_details[f"top_songs"]
+    if of_type == "toptracks":
+        artist_list = artist_details["top_songs"]
     else:
-        list_of_type = artist_details[f"artist_{of_type}s"]
+        artist_list = artist_details[f"artist_{of_type}s"]
     if handle == 'n':
         page = int(page) + 1
-        send_checker(list_of_type, call.message.chat.id, page)
+        send_checker(artist_list, call.message.chat.id, page)
     elif handle == 'p':
         page = int(page) - 1
-        send_checker(list_of_type, call.message.chat.id, page)
+        send_checker(artist_list, call.message.chat.id, page)
 
 
 def handle_lyrics_callback(call):
