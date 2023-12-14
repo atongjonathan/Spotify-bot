@@ -227,6 +227,7 @@ def process_callback_query(call):
     elif data.startswith("r_"):
         handle_result_callback(call)
     else:
+        bot.delete_message(call.message.chat.id, call.message.id)
         get_album_songs(data, call.message.chat.id)
 
 
