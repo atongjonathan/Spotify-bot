@@ -246,6 +246,7 @@ def handle_top_tracks_callback(call):
 
 
 def handle_result_callback(call):
+    bot.delete_message(call.message.chat.id, call.message.id)
     uri = call.data.split("_")[1]
     try:
         artist_details = spotify.get_chosen_artist(uri)
@@ -253,7 +254,6 @@ def handle_result_callback(call):
     except BaseException:
         track_details = spotify.get_chosen_song(uri)
         send_chosen_track(track_details, call.message)
-    bot.delete_message(call.message.chat.id, call.message.id)
 
 
 def handle_pagination_callback(call):
@@ -333,7 +333,7 @@ def send_song_data(message):
             reply_markup=keyboard.start_markup)
         return
     result_string = [
-        f"{idx+1}. `{item['name']}` ~ Artist(s): {item['artists']}" for idx,
+        f"{idx+1}. `{item['name']}` - {item['artists']}" for idx,
         item in enumerate(possible_tracks)]
     result_string = '\n'.join(result_string)
     artists_keyboard = keyboard.keyboard_for_results(results=possible_tracks)
