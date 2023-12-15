@@ -3,7 +3,7 @@ import requests
 import os
 from io import BytesIO
 import time
-from telebot import util, types
+from telebot import util
 from spotify import Spotify
 from keyboards import Keyboard
 from get_lyrics import azlyrics, lyrics_extractor_lyrics, musicxmatch_lyrics, lyricsgenius_lyrics
@@ -11,6 +11,7 @@ from config import TELEGRAM_BOT_TOKEN
 import json
 import warnings
 from logging import FileHandler, StreamHandler, INFO, basicConfig, getLogger
+from functions import download
 
 basicConfig(format='%(levelname)s | %(asctime)s - %(name)s - line %(lineno)d | %(message)s',
             handlers=[FileHandler('logs.txt'), StreamHandler()], level=INFO)
@@ -124,26 +125,15 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
             caption=caption,
             reply_markup=keyboard.start_markup)
     update = bot.send_message(chat_id, "... Downloading song just a sec ...")
-    query = f"{title} {artist}"
-    data = None
-    if data is not None:
-        # bot.edit_message_text(
-        # "Adding metadata😇...",
-        # chat_id=chat_id,
-        # message_id=update.message_id)
-        for f in os.listdir('.'):
-            if os.path.isfile(f) and f.endswith('.webm'):
-                old_name = f.split(".webm")[0]
-                new_name = f.replace('.webm', '.mp3').replace(old_name, title)
-                print(old_name, "\n", new_name)
-                os.rename(f, new_name)
-
-        # audio.set_metadata(track_details, new_name)
-        with open(new_name, "rb") as file:
-            bot.send_chat_action(chat_id, "upload_audio")
-            bot.send_audio(chat_id, audio=file, title=f'{track_details["name"]}', performer=track_details["artists"],
-                           reply_markup=reply_markup, caption="@JonaAtong")
-        os.remove(new_name)
+    is_downloaded = download(track_url)
+    if is_downloaded:
+        for f in os.listdir('./output'):
+            file_path = os.path.join("./output", f)
+            with open(file_path, "rb") as file:
+                bot.send_chat_action(chat_id, "upload_audio")
+                bot.send_audio(chat_id, audio=file, title=f'{track_details["name"]}', performer=track_details["artists"],
+                            reply_markup=reply_markup, caption="@JonaAtong")
+            os.remove(file_path)
     elif track_details['preview_url'] is None:
         bot.send_message(
             chat_id,
