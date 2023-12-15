@@ -23,15 +23,26 @@ class Keyboard():
             lists.append(sublist)
         return lists
 
+    def build_menu(self, buttons, n_cols, header_buttons=None,
+                   footer_buttons=None):
+        menu = [buttons[i:i + n_cols] for i in range(0, len(buttons), n_cols)]
+        if header_buttons:
+            menu.insert(0, header_buttons)
+        if footer_buttons:
+            menu.append(footer_buttons)
+        return menu
+
     def keyboard_for_results(self, results):
-        keyboard = types.InlineKeyboardMarkup(row_width=4)
         close = types.InlineKeyboardButton(
             "Close", callback_data=f'close_make')
+        buttons = []
         for idx, result in enumerate(results):
             button = types.InlineKeyboardButton(
                 str(idx + 1), callback_data=f"r_{result['uri']}")
-            keyboard.row(button)
-        keyboard.row(close)
+            buttons.append(button)
+        keyboard = types.InlineKeyboardMarkup(
+            self.build_menu(buttons, n_cols=4))
+        keyboard.add(close)
         return keyboard
 
     def make_for_type(self, list_of_type, current_page):
