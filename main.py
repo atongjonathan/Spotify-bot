@@ -8,7 +8,6 @@ from spotify import Spotify
 from keyboards import Keyboard
 from get_lyrics import azlyrics, lyrics_extractor_lyrics, musicxmatch_lyrics, lyricsgenius_lyrics
 from config import TELEGRAM_BOT_TOKEN
-from billboard import get_billboard_hot_100
 import json
 import warnings
 from logging import FileHandler, StreamHandler, INFO, basicConfig, getLogger
