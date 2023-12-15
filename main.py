@@ -375,19 +375,6 @@ def get_song(message):
         message.chat.id, lambda message: send_song_data(message))
 
 
-@bot.message_handler(commands=["top_songs"])
-def top_songs(message):
-    top_100 = get_billboard_hot_100()
-    # top_10 = top_100[:9]
-    long = ""
-    for index, item in enumerate(top_100):
-        long = f"{long}\n`{index+2}. {item['song']}-{item['title']}`\n"
-    # list_of_type = (spotify.get_top_10(top_10))
-    # send_checker(list_of_type, message.chat.id)
-    edit = bot.send_message(message.chat.id, "Searching ... ⏳")
-    bot.send_message(message.chat.id, long)
-    bot.delete_message(message.chat.id, edit.message_id)
-
 
 @bot.message_handler(commands=['commands'])
 def info(message):
