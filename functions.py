@@ -1,7 +1,7 @@
 import subprocess
-import requests
-import telebot
-import os
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 def download(track_link):
@@ -15,6 +15,7 @@ def download(track_link):
         return True
 
     except Exception as e:
+        logger.error(e)
         # more info: apparently they give "SongError: Track no longer exists"
         # I can handle them more properly later without passing them to this function in the first place
         # e.g. by using spotify a
