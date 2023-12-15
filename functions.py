@@ -10,7 +10,7 @@ def download(track_link):
         print("start downloading: " + track_link)
         normal_download_command = ['spotdl', "--bitrate", "320k", track_link] # nomal download
         command = normal_download_command # normal download
-        subprocess.run(command, cwd="./output", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(command, cwd="output", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         print("end downloading: " + track_link)
         return True
 
