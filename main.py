@@ -3,7 +3,7 @@ import requests
 import os
 from io import BytesIO
 import time
-from telebot import util
+from telebot import util,types
 from spotify import Spotify
 from keyboards import Keyboard
 from get_lyrics import azlyrics, lyrics_extractor_lyrics, musicxmatch_lyrics, lyricsgenius_lyrics
@@ -124,7 +124,7 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
             photo=track_details['image'],
             caption=caption,
             reply_markup=keyboard.start_markup)
-    update = bot.send_message(chat_id, "... Downloading song just a sec ...")
+    update = bot.send_message(chat_id, f'... ⚡Downloading "{title}" in a min⚡ ...')
     is_downloaded = download(track_url)
     if is_downloaded:
         for f in os.listdir('./output'):
@@ -135,11 +135,15 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
                             reply_markup=reply_markup, caption="@JonaAtong")
             os.remove(file_path)
     elif track_details['preview_url'] is None:
+        listen = types.InlineKeyboardMarkup()
+        button = types.InlineKeyboardButton("Open", url=track_url)
+        listen.add(button)
         bot.send_message(
             chat_id,
-            text=f"{track_url}",
+            text=f"Listen {title} on spotify ?",
             reply_markup=keyboard.start_markup)
     else:
+        bot.edit_message_text("Downloading full song failed 😢", update.chat.id, update.id)
         response = requests.get(track_details['preview_url'])
         audio_content = response.content
         audio_io = BytesIO(audio_content)
@@ -381,6 +385,8 @@ def get_logs(message):
         message.chat.id,
         file,
         reply_markup=keyboard.start_markup)
+    file = open("logs.txt", "w")
+    file.write("")
     file.close()
 
 
