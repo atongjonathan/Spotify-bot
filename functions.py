@@ -17,17 +17,20 @@ def download(track_link):
                             text=True,
                             capture_output=True)
     logger.info(result.stdout)
-    logger.info("end downloading: " + track_link)
     return True
 
   except subprocess.CalledProcessError as e:
     logger.error(f"Error executing process {e}")
     logger.error(f"Outputs {e.output}")
-    # ffmpeg_command = ['spotdl', "--download-ffmpeg"]
-    # subprocess.run(ffmpeg_command)
-    # normal_download_command = ['spotdl', "--bitrate", "320k",
-    #                            track_link]  # nomal download
-    # command = normal_download_command  # normal download
-    # subprocess.run(command, cwd="output")
-
-    return False
+    ffmpeg_command = ['spotdl', "--download-ffmpeg"]
+    subprocess.run(ffmpeg_command)
+    try:
+      normal_download_command = ['spotdl', "--bitrate", "320k",
+                                 track_link]  # nomal download
+      command = normal_download_command  # normal download
+      subprocess.run(command, cwd="output")
+      return True
+    except:
+      logger.error(f"Error executing process {e}")
+      logger.error(f"Outputs {e.output}")
+      return False
