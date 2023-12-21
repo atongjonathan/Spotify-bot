@@ -8,3 +8,4 @@ moviepy
 lyrics_extractor
 lyricsgenius
 google-api-python-client
+flask

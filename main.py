@@ -133,6 +133,7 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
       file_path = os.path.join("output", f)
       with open(file_path, "rb") as file:
         bot.send_chat_action(chat_id, "upload_audio")
+        print(track_details)
         bot.send_audio(chat_id,
                        audio=file,
                        title=f'{track_details["name"]}',
