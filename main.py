@@ -382,7 +382,6 @@ def info(message):
 
 @bot.message_handler(commands=['logs'])
 def get_logs(message):
-
   file = open("logs.txt")
   bot.send_document(message.chat.id, file, reply_markup=keyboard.start_markup)
   file.close()
