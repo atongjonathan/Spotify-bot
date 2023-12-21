@@ -126,7 +126,7 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
                    photo=track_details['image'],
                    caption=caption,
                    reply_markup=keyboard.start_markup)
-  update = bot.send_message(chat_id, "... Downloading song just a sec ...")
+  update = bot.send_message(chat_id, "...⚡Downloading song just a min⚡ ...")
   is_downloaded = download(track_url)
   if is_downloaded:
     for f in os.listdir('output'):
