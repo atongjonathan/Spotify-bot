@@ -129,8 +129,8 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
   update = bot.send_message(chat_id, "... Downloading song just a sec ...")
   is_downloaded = download(track_url)
   if is_downloaded:
-    for f in os.listdir('./output'):
-      file_path = os.path.join("./output", f)
+    for f in os.listdir('output'):
+      file_path = os.path.join("output", f)
       with open(file_path, "rb") as file:
         bot.send_chat_action(chat_id, "upload_audio")
         bot.send_audio(chat_id,
