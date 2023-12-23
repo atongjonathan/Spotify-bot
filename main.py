@@ -422,4 +422,7 @@ def handle_query(call):
 if __name__ == '__main__':
   logger.info("Bot is running :>")
   keep_alive()
-  bot.polling()
+  try:
+    bot.polling(non_stop=True)
+  except:
+    bot.polling(non_stop=True)
