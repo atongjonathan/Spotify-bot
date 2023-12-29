@@ -107,6 +107,21 @@ class Keyboard():
         keyboard.add(lyrics_button)
         return keyboard
 
+    def make_for_trending(self, list_of_trending):
+        keyboard = types.InlineKeyboardMarkup()
+        close = types.InlineKeyboardButton(
+            "Close", callback_data=f'close_make')
+        for song in list_of_trending:
+            name = song["name"] # Used a string visible
+            uri = song["uri"] # Used as callback for generation of the  album or single songs
+            # artist_uri = album["artist_uri"] # For pagination to know the chosen artist
+            button = types.InlineKeyboardButton(
+                f"{name}", callback_data=uri)
+            keyboard.add(button)
+        keyboard.add(close)
+        return keyboard
+
+
     def view_handler(self, name:str, uri:str, lengths:list):
         """
         Send reply markup for user to be specific on type of data required

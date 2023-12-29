@@ -202,7 +202,11 @@ def send_checker(list_of_type:list, chat_id:str, current_page:int):
   """
   Requests user to specify the song to get with appropriate reply markup
   """
-  reply_markup = keyboard.make_for_type(list_of_type, current_page)
+  try:
+    reply_markup = keyboard.make_for_type(list_of_type, current_page)
+  except:
+    reply_markup = keyboard.make_for_trending(list_of_type)
+    print("Done")
   global make_id
   try:
     bot.edit_message_reply_markup(chat_id, make_id, reply_markup=reply_markup)
@@ -396,13 +400,15 @@ def get_song(message):
 
 @bot.message_handler(commands=['trending'])
 def trending(message):
+  reply = bot.reply_to(message, "Getting trending songs ...")
   hot_100 = billboard.ChartData("hot-100")
   chart_data = []
-  for song in hot_100:
-    item = {"artist": song.title, "title": song.artist}
+  for song in hot_100[:9]:
+    item = f"{song.title}, {song.artist}"
     chart_data.append(item)
-  
-  send_checker(chart_data, message.chat.id, 0)
+  bot.edit_message_text("\n".join(chart_data), message.chat.id, reply.id)
+
+
 @bot.message_handler(commands=['commands'])
 def info(message):
   bot.reply_to(
