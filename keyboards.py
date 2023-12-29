@@ -1,6 +1,7 @@
 from telebot import types
-
-
+from logging import getLogger
+import json
+logger = getLogger(__name__)
 class Keyboard():
     def __init__(self) -> None:
         self.hide_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -32,13 +33,25 @@ class Keyboard():
             menu.append(footer_buttons)
         return menu
 
-    def keyboard_for_results(self, results):
+    def keyboard_for_results(self, results:list):
+        """
+        Makes keyboard for possible artists or songs
+
+        Args:
+            list: A list containing dictionaries with details of the artist/song(s) found.
+        Each dictionary includes the following keys: - 'uri' (str): The URI of the artist/song. - 'name' (str): The name of the artist. - 'followers' (str): The total number of followers for the artist, formatted with commas
+
+        Returns:
+            keyboard: A keyboard with the following close button (callback_data: close_make) and results with arguements:
+                - callback_data: result_{uri}
+                - string: Number from the items 
+        """
         close = types.InlineKeyboardButton(
             "Close", callback_data=f'close_make')
         buttons = []
         for idx, result in enumerate(results):
             button = types.InlineKeyboardButton(
-                str(idx + 1), callback_data=f"r_{result['uri']}")
+                str(idx + 1), callback_data=f"result_{result['uri']}")
             buttons.append(button)
         keyboard = types.InlineKeyboardMarkup(
             self.build_menu(buttons, n_cols=4))
@@ -46,12 +59,19 @@ class Keyboard():
         return keyboard
 
     def make_for_type(self, list_of_type, current_page):
-        try:
+        """
+        Makes keyboard for a specific list and for a specific page
+
+        Args:
+            list_of_type: Normaly is a dictionary UNLESS top tracks where it is a LIST
+        """
+        try: # Used to distinguish if list of type is a list of top tracks or a dict
             for key, value in list_of_type.items():
                 list_of_type = value
-                one_type = key
-        except Exception as e:
-            one_type = "toptracks"
+                one_type = key # Key is the type for future generations
+        except Exception as e: # Found to be of top tracks
+            logger.info(f"Exception {e}. Handling it for toptracks case")
+            one_type = "toptracks" # Key is set to be toptracks
             pass
         pages_list = self._make_sub_lists(list_of_type, 5)
         keyboard = types.InlineKeyboardMarkup()
@@ -60,14 +80,14 @@ class Keyboard():
         else:
             page = pages_list[current_page]
             for album in page:
-                name = album["name"]
-                uri = album["uri"]
-                artist_uri = album["artist_uri"]
+                name = album["name"] # Used a string visible
+                uri = album["uri"] # Used as callback for generation of the  album or single songs
+                artist_uri = album["artist_uri"] # For pagination to know the chosen artist
                 button = types.InlineKeyboardButton(
                     f"{name}", callback_data=uri)
                 keyboard.add(button)
         next = types.InlineKeyboardButton(
-            "Next >>", callback_data=f'_n_{artist_uri}_{one_type}_{current_page}')
+            "Next >>", callback_data=f'_n_{artist_uri}_{one_type}_{current_page}')# Using data to be used for next pages
         previous = types.InlineKeyboardButton(
             "<< Previous", callback_data=f'_p_{artist_uri}_{one_type}_{current_page}')
         close = types.InlineKeyboardButton(
@@ -87,16 +107,28 @@ class Keyboard():
         keyboard.add(lyrics_button)
         return keyboard
 
-    def view_handler(self, name, uri, lengths):
+    def view_handler(self, name:str, uri:str, lengths:list):
+        """
+        Send reply markup for user to be specific on type of data required
+
+        Args:
+            - name: Name of the artist for use as string
+            - uri: For artist
+            - lengths: Length to determine plausibility
+        
+        Returns:
+            Keyboard with all possibe list items from the artist with callback_data:"type of data speciified_the uri of the artist"
+
+        """
         keyboard = types.InlineKeyboardMarkup()
         top_tracks_button = types.InlineKeyboardButton(
-            f"Top Tracks🔝", callback_data=f"toptracks_{uri}")
+            f"Top Tracks🔝", callback_data=f"toptracks_{uri}") # For use of uri to geberate next top_tracks
         keyboard.add(top_tracks_button)
         type = ['single', 'album', 'compilation']
         for idx, item in enumerate(lengths):
-            if (item > 0):
+            if (item > 0): # Make only when more than 0
                 button = types.InlineKeyboardButton(
-                    f"View {name}'s {type[idx].title()}s🧐", callback_data=f"{type[idx]}_{uri}")
+                    f"View {name}'s {type[idx].title()}s🧐", callback_data=f"{type[idx]}_{uri}") # type of data speciified for the artist of that uri
                 keyboard.row(button)
         return keyboard
 
