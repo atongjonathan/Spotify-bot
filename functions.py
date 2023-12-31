@@ -7,8 +7,7 @@ logger = getLogger(__name__)
 def download(track_link):
   try:
     # download track
-    logger.info(f"Start downloading: {track_link}")
-    normal_download_command = ['spotdl', "--bitrate", "320k",
+    normal_download_command = ['spotdl-4.2.4-win32.exe', "--bitrate", "320k",
                                track_link]  # nomal download
     command = normal_download_command  # normal download
     result = subprocess.run(command,
