@@ -9,3 +9,4 @@ lyrics_extractor
 lyricsgenius
 google-api-python-client
 flask
+billboard.py
