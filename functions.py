@@ -7,15 +7,17 @@ logger = getLogger(__name__)
 def download(track_link):
   try:
     # download track
-    normal_download_command = ['spotdl-4.2.4-win32.exe', "--bitrate", "320k",
+    normal_download_command = ['spotdl-4.2.4-win32.exe', "--bitrate", "128k",
                                track_link]  # nomal download
     command = normal_download_command  # normal download
+    logger.info("Starting to download")
     result = subprocess.run(command,
                             cwd="output",
                             check=True,
                             text=True,
                             capture_output=True)
     logger.info(result.stdout)
+    logger.info("Finished download...")
     return True
 
   except subprocess.CalledProcessError as e:
@@ -32,4 +34,4 @@ def download(track_link):
     except:
       logger.error(f"Error executing process {e}")
       logger.error(f"Outputs {e.output}")
-      return False
+    return False
