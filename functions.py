@@ -23,10 +23,10 @@ def download(track_link):
   except subprocess.CalledProcessError as e:
     logger.error(f"Error executing process {e}")
     logger.error(f"Outputs {e.output}")
-    ffmpeg_command = ['spotdl', "--download-ffmpeg"]
+    ffmpeg_command = ['spot', "--download-ffmpeg"]
     subprocess.run(ffmpeg_command)
     try:
-      normal_download_command = ['spotdl', "--bitrate", "320k",
+      normal_download_command = ['spot', "--bitrate", "320k",
                                  track_link]  # nomal download
       command = normal_download_command  # normal download
       subprocess.run(command, cwd="output")
