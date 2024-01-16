@@ -420,15 +420,15 @@ def get_song(message):
         message.chat.id, lambda message: send_song_data(message))
 
 
-@bot.message_handler(commands=['trending'])
-def trending(message):
-    reply = bot.reply_to(message, "Getting trending songs ...")
-    hot_100 = billboard.ChartData("hot-100")
-    chart_data = []
-    for song in hot_100[:9]:
-        item = f"{song.title}, {song.artist}"
-        chart_data.append(item)
-    bot.edit_message_text("\n".join(chart_data), message.chat.id, reply.id)
+# @bot.message_handler(commands=['trending'])
+# def trending(message):
+#     reply = bot.reply_to(message, "Getting trending songs ...")
+#     hot_100 = billboard.ChartData("hot-100")
+#     chart_data = []
+#     for song in hot_100[:9]:
+#         item = f"{song.title}, {song.artist}"
+#         chart_data.append(item)
+#     bot.edit_message_text("\n".join(chart_data), message.chat.id, reply.id)
 
 
 @bot.message_handler(commands=['commands'])
