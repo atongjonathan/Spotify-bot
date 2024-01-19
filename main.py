@@ -137,7 +137,7 @@ def send_chosen_artist(artist_details, message):
                              lengths))
     bot.pin_chat_message(message.chat.id, pin.id)
 
-
+@retry_func
 def send_audios_or_previews(track_details, caption, chat_id, send_photo):
     track_url = track_details['external_url']
     reply_markup = keyboard.lyrics_handler(track_details['name'],
@@ -155,20 +155,20 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
     if is_downloaded:
         for f in os.listdir('output'):
             file_path = os.path.join("output", f)
-            if file_path.endswith(".mp3"):
-              with open(file_path, "r") as file:
-                logger.info("Sending Song...")
+            if file_path.endswith(".mp3"):                
+              with open(file_path, "rb") as file:
+                logger.info(f"Sending Song...{f}", )
                 bot.send_chat_action(chat_id, "upload_audio")
                 bot.send_audio(chat_id,
                                 file,
-                                title=f'{track_details["name"]}',
-                                performer=track_details["artists"],
+                                title=title,
+                                performer=artist,
                                 reply_markup=reply_markup,
                                 caption="@JonaAtong")
-                print("File Sent")
+                logger.info("Sent succcessfully")
                 os.remove(file_path)
             else:
-                  print(file_path, " is not a song")
+                  print(f, " is not a song")
 
     elif track_details['preview_url'] is None:
         bot.send_message(chat_id,
