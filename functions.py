@@ -7,7 +7,7 @@ logger = getLogger(__name__)
 def download(track_link):
   try:
     # download track
-    normal_download_command = ['spot', "--bitrate", "128k",
+    normal_download_command = ['spotdl', "--bitrate", "128k",
                                track_link]  # nomal download
     command = normal_download_command  # normal download
     logger.info("Starting to download")

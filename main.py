@@ -37,8 +37,9 @@ keyboard = Keyboard()
 
 def retry_func(func):
     """
-    Handles connection error issues on functions that should not fail to happen
-    """
+      Handles connection error issues on functions that should not fail to happen
+      """
+
     def wrapper(*args, **kwargs):
         retries = 0
         while retries < MAX_RETRIES:
@@ -71,11 +72,8 @@ def send_top_songs(call):
             caption = f'👤Artist: `{", ".join(track_details["artists"])}`\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n🎵Song : `{track_details["name"]}`\n'
         except BaseException:
             continue
-        send_audios_or_previews(
-            track_details,
-            caption,
-            call.message.chat.id,
-            True)
+        send_audios_or_previews(track_details, caption,
+                                call.message.chat.id, True)
     bot.send_message(
         call.message.chat.id,
         f'Those are `{artist_details["name"]}`\'s top 🔝 10 tracks 💪!',
@@ -85,14 +83,14 @@ def send_top_songs(call):
 
 def search_artist(message) -> None:
     """
-    Search for the artist from the string provided.
+      Search for the artist from the string provided.
 
-    Args:
-      message: Telegram message object
+      Args:
+        message: Telegram message object
 
-    Returns:
-      None
-    """
+      Returns:
+        None
+      """
     artist_results = spotify.artist(
         message.text)  # Search for list of possible artists
     if artist_results is None:  # Handles when no artist is found
@@ -119,8 +117,8 @@ def search_artist(message) -> None:
 
 def send_chosen_artist(artist_details, message):
     """
-    Sends back the requested artist details with a reply markup for specificity of which type
-    """
+      Sends back the requested artist details with a reply markup for specificity of which type
+      """
     caption = f'👤Artist: `{artist_details["name"]}`\n🧑Followers: `{artist_details["followers"]:,}` \n🎭Genre(s): `{", ".join(artist_details["genres"])}` \n'
     lists_of_type = [
         artist_details["artist_singles"]["single"],
@@ -137,7 +135,7 @@ def send_chosen_artist(artist_details, message):
                              lengths))
     bot.pin_chat_message(message.chat.id, pin.id)
 
-@retry_func
+
 def send_audios_or_previews(track_details, caption, chat_id, send_photo):
     track_url = track_details['external_url']
     reply_markup = keyboard.lyrics_handler(track_details['name'],
@@ -155,20 +153,20 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
     if is_downloaded:
         for f in os.listdir('output'):
             file_path = os.path.join("output", f)
-            if file_path.endswith(".mp3"):                
-              with open(file_path, "rb") as file:
-                logger.info(f"Sending Song...{f}", )
-                bot.send_chat_action(chat_id, "upload_audio")
-                bot.send_audio(chat_id,
-                                file,
-                                title=title,
-                                performer=artist,
-                                reply_markup=reply_markup,
-                                caption="@JonaAtong")
-                logger.info("Sent succcessfully")
+            if file_path.endswith(".mp3"):
+                with open(file_path, "rb") as file:
+                    logger.info(f"Sending Song...{f}", )
+                    bot.send_chat_action(chat_id, "upload_audio")
+                    bot.send_audio(chat_id,
+                                   file,
+                                   title=title,
+                                   performer=artist,
+                                   reply_markup=reply_markup,
+                                   caption="@JonaAtong")
+                    logger.info("Sent successfully")
                 os.remove(file_path)
             else:
-                  print(f, " is not a song")
+                print(f, " is not a song")
 
     elif track_details['preview_url'] is None:
         bot.send_message(chat_id,
@@ -203,7 +201,7 @@ def get_album_songs(uri, chat_id):
         album_tracks = album_details['album_tracks']
         for track in album_tracks:
             id = track["uri"]
-            artist = track["artists"]
+            artist = ", ".join(track["artists"])
             track_details = spotify.get_chosen_song(id)
             caption = f'👤Artist: `{artist}`\n🔢Track : {track_details["track_no"]} of {album_details["total_tracks"]}\n🎵Song : `{track_details["name"]}`\n'
             send_audios_or_previews(track_details, caption, chat_id, False)
@@ -215,8 +213,8 @@ def get_album_songs(uri, chat_id):
 
 def send_checker(list_of_type: list, chat_id: str, current_page: int):
     """
-    Requests user to specify the song to get with appropriate reply markup
-    """
+      Requests user to specify the song to get with appropriate reply markup
+      """
     try:
         reply_markup = keyboard.make_for_type(list_of_type, current_page)
     except BaseException:
@@ -250,7 +248,8 @@ def check_input(message):
 def process_callback_query(call):
     data = call.data
     if data.startswith('album') or data.startswith('single') or data.startswith(
-            'compilation') or data.startswith('toptracks'):  # Handle for list of type of an artist
+        'compilation') or data.startswith(
+            'toptracks'):  # Handle for list of type of an artist
         handle_list_callback(call)
     elif data.startswith("lyrics"):  # Handle for sending lyrics of a song
         handle_lyrics_callback(call)
@@ -267,8 +266,8 @@ def process_callback_query(call):
 
 def handle_list_callback(call):
     """
-    Uses type, and uri to get list of type or top_tracks and calls send_checker using that info
-    """
+      Uses type, and uri to get list of type or top_tracks and calls send_checker using that info
+      """
     type = call.data.split("_")[0]
     uri = call.data.split("_")[1]
     artist_details = spotify.get_chosen_artist(uri)
@@ -286,8 +285,8 @@ def handle_top_tracks_callback(call):
 
 def handle_result_callback(call):
     """
-    Calls either the track or artist method to reply to the user with requested info
-    """
+      Calls either the track or artist method to reply to the user with requested info
+      """
     bot.delete_message(
         call.message.chat.id,
         call.message.id)  # Deletes user manual for possible artists
@@ -445,10 +444,8 @@ def info(message):
 @bot.message_handler(commands=['logs'])
 def get_logs(message):
     file = open("logs.txt")
-    bot.send_document(
-        message.chat.id,
-        file,
-        reply_markup=keyboard.start_markup)
+    bot.send_document(message.chat.id, file,
+                      reply_markup=keyboard.start_markup)
     file.close()
 
 
