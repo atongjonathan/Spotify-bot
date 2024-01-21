@@ -10,7 +10,7 @@ def download(track_link):
     normal_download_command = ['spotdl', "--bitrate", "128k",
                                track_link]  # nomal download
     command = normal_download_command  # normal download
-    logger.info("Starting to download")
+    logger.info("Download will begin shortly...")
     result = subprocess.run(command,
                             cwd="output",
                             check=True,
@@ -26,7 +26,7 @@ def download(track_link):
     ffmpeg_command = ['spot', "--download-ffmpeg"]
     subprocess.run(ffmpeg_command)
     try:
-      normal_download_command = ['spot', "--bitrate", "320k",
+      normal_download_command = ['spotdl', "--bitrate", "320k",
                                  track_link]  # nomal download
       command = normal_download_command  # normal download
       subprocess.run(command, cwd="output")
