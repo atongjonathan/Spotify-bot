@@ -124,14 +124,14 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
             file_path = os.path.join("output", f)
             if file_path.endswith(".mp3"):
                 with open(file_path, "rb") as file:
-                    logger.info(f"Sending Song...{f}", )
+                    logger.info(f"Sending {f}", )
                     bot.send_chat_action(chat_id, "upload_audio")
                     bot.send_audio(chat_id,
                                    file,
                                    title=title,
                                    performer=artist,
                                    reply_markup=reply_markup,
-                                   caption="@JonaAtong")
+                                   caption=f"#{artist.replace(' ','')}")
                     logger.info("Sent successfully")
                 os.remove(file_path)
             else:
@@ -307,15 +307,15 @@ def handle_lyrics_callback(call):
                 lyrics = musicxmatch_lyrics(artist, title)
     caption = f"👤Artist: `{', '.join(track_details['artists'])}`\n🎵Song : `{track_details['name']}`\n━━━━━━━━━━━━\n📀Album : `{track_details['album']}`\n🔢Track : {track_details['track_no']} of {track_details['total_tracks']}\n⭐️ Released: `{track_details['release_date']}`\n\n🎶Lyrics📝:\n\n`{lyrics}`"
     try:
-        bot.send_message(call.message.chat.id,
+        bot.reply_to(call.message,
                          text=caption,
                          reply_markup=keyboard.start_markup)
     except BaseException:
         splitted_text = util.smart_split(caption, chars_per_string=3000)
         for text in splitted_text:
             try:
-                bot.send_message(call.message.chat.id,
-                                 text=text,
+                bot.reply_to(call.message,
+                                 text=caption,
                                  reply_markup=keyboard.start_markup)
             except Exception as e:
                 bot.answer_callback_query(call.id, e)
@@ -352,5 +352,5 @@ def send_song_data(message, query=None):
     artists_keyboard = keyboard.keyboard_for_results(results=possible_tracks)
     bot.send_message(
         message.chat.id,
-        f"Found {no_of_results} result(s) from the search `{message.text}` ~ {message.from_user.first_name}\n\n{result_string}",
+        f"Found {no_of_results} result(s) from the search `{query}` ~ {message.from_user.first_name}\n\n{result_string}",
         reply_markup=artists_keyboard)

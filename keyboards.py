@@ -15,7 +15,6 @@ class Keyboard():
         self.start_markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         self.start_markup.row("⬇️ Hide command buttons")
         self.start_markup.row('/artist', '/song')
-        self.start_markup.row('/commands', '/ping')
 
     def _make_sub_lists(self, list_of_type, items_per_page):
         items_per_page = 5

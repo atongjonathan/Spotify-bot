@@ -7,3 +7,5 @@ Z_Logs.txt
 logs.txt
 .env
 .cache
+/.local
+spot.exe

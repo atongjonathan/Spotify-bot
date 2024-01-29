@@ -8,7 +8,7 @@ from utils import keyboard, bot, search_artist, send_song_data, process_callback
 
 
 basicConfig(
-    format='%(levelname)s | %(asctime)s - %(name)s - line %(lineno)d | %(message)s',
+    format='SG-Bot | %(levelname)s | %(asctime)s - %(name)s - line %(lineno)d | %(message)s',
     handlers=[FileHandler('logs.txt'),
               StreamHandler()],
     level=INFO)
@@ -95,7 +95,7 @@ def get_logs(message):
 @bot.message_handler(commands=['ping'])
 def ping(message):
     start_time = time.time()
-    response = bot.send_message(message.chat.id, "Pinging...")
+    response = bot.reply_to(message, "Pinging...")
     end_time = time.time()
     elapsed_time_ms = int((end_time - start_time) * 1000)
 
@@ -107,11 +107,11 @@ def ping(message):
 @bot.message_handler(func=lambda message: True)
 def handle_text(message):
     if message.text == "⬆️ Show command buttons":
-        bot.send_message(message.chat.id,
+        bot.reply_to(message,
                          "⬆️ Show command buttons",
                          reply_markup=keyboard.start_markup)
     elif message.text == "⬇️ Hide command buttons":
-        bot.send_message(message.chat.id,
+        bot.reply_to(message,
                          "⬇️ Hide command buttons",
                          reply_markup=keyboard.hide_keyboard)
 
