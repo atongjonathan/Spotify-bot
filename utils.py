@@ -10,6 +10,7 @@ from logging import getLogger
 from functions import download
 import requests
 from io import BytesIO
+import billboard
 
 
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN), parse_mode='markdown')
@@ -203,7 +204,7 @@ def send_checker(list_of_type: list, chat_id: str, current_page: int):
 
 def check_input(query):
     if "," not in query:
-        text_message = query + ","
+        query + ","
     data_list = query.split(",")
     title = data_list[0]
     try:

@@ -3,8 +3,8 @@ import warnings
 from logging import FileHandler, StreamHandler, INFO, basicConfig, getLogger
 from utils import keyboard, bot, search_artist, send_song_data, process_callback_query
 # from keep_alive import keep_alive
-# import billboard
-
+import billboard
+from spotify import Spotify
 
 
 basicConfig(
@@ -63,15 +63,20 @@ def get_song(message):
             message.chat.id, lambda message: send_song_data(message))
 
 
-# @bot.message_handler(commands=['trending'])
-# def trending(message):
-#     reply = bot.reply_to(message, "Getting trending songs ...")
-#     hot_100 = billboard.ChartData("hot-100")
-#     chart_data = []
-#     for song in hot_100[:9]:
-#         item = f"{song.title}, {song.artist}"
-#         chart_data.append(item)
-#     bot.edit_message_text("\n".join(chart_data), message.chat.id, reply.id)
+@bot.message_handler(commands=['trending'])
+def trending(message):
+    reply = bot.send_message(message.chat.id, "Awesome getting trending somgs in a few")
+    hot_100 = billboard.ChartData("hot-100")[:10]
+    spotify = Spotify()
+    track_details = [spotify.song(artist=item.artist,title=item.title)[0] for item in hot_100]
+    result_string = [f'{idx+1}. `{item["name"]}` - {item["artists"]}' for idx, item in enumerate(track_details)]
+    result_string = '\n'.join(result_string)
+    artists_keyboard = keyboard.keyboard_for_results(results=track_details)
+    bot.delete_message(reply.chat.id, reply.id)
+    bot.send_message(
+        message.chat.id,
+        f"Trending Songs\n\n{result_string}",
+        reply_markup=artists_keyboard)
 
 
 @bot.message_handler(commands=['commands'])
