@@ -1,6 +1,5 @@
 import subprocess
 from logging import getLogger
-import spotdl
 
 logger = getLogger(__name__)
 

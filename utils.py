@@ -10,7 +10,6 @@ from logging import getLogger
 from functions import download
 import requests
 from io import BytesIO
-import billboard
 
 
 bot = telebot.TeleBot((TELEGRAM_BOT_TOKEN), parse_mode='markdown')
@@ -44,6 +43,41 @@ def send_top_songs(call):
         f'Those are `{artist_details["name"]}`\'s top 🔝 10 tracks 💪!',
         reply_markup=keyboard.start_markup)
     return
+
+
+def search_song(message, query=None):
+    """
+      Search for the song from the string provided.
+
+      Args:
+        message: Telegram message object
+
+      Returns:
+        None
+      """    
+    if query != None:
+        artist, title = check_input(query)
+    else:
+        query = message.text
+        artist, title = check_input(query)
+    possible_tracks = spotify.song(artist, title)
+    no_of_results = len(possible_tracks)
+    if no_of_results == 0:
+        bot.send_message(
+            message.chat.id,
+            f"Song `{query}` not found!⚠. Please check your spelling and also include special characters.\nTry again? /song",
+            reply_markup=keyboard.start_markup)
+        return
+    result_string = [
+        f"{idx+1}. `{item['name']}` - {item['artists']}"
+        for idx, item in enumerate(possible_tracks)
+    ]
+    result_string = '\n'.join(result_string)
+    artists_keyboard = keyboard.keyboard_for_results(results=possible_tracks)
+    bot.send_message(
+        message.chat.id,
+        f"Found {no_of_results} result(s) from the search `{query}` ~ {message.from_user.first_name}\n\n{result_string}",
+        reply_markup=artists_keyboard)
 
 
 def search_artist(message, artist=None) -> None:
@@ -158,12 +192,13 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
 
 def get_album_songs(uri, chat_id):
     album_details = spotify.album("", "", uri)
+    artist = ", ".join(album_details["artists"])
     if isinstance(album_details, str):
         track_details = spotify.get_chosen_song(uri)
         caption = f'👤Artist: `{ ", ".join(track_details["artists"])}`\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n🎵Song : `{track_details["name"]}`\n'
         send_audios_or_previews(track_details, caption, chat_id, True)
     else:
-        caption = f'👤Artist: `{", ".join(album_details["artists"])}`\n📀 Album: `{album_details["name"]}`\n⭐️ Released: `{album_details["release_date"]}`\n🔢 Total Tracks: {album_details["total_tracks"]}'
+        caption = f'👤Artist: `{artist}`\n📀 Album: `{album_details["name"]}`\n⭐️ Released: `{album_details["release_date"]}`\n🔢 Total Tracks: {album_details["total_tracks"]}'
         bot.send_photo(chat_id,
                        album_details["images"],
                        caption=caption,
@@ -171,7 +206,6 @@ def get_album_songs(uri, chat_id):
         album_tracks = album_details['album_tracks']
         for track in album_tracks:
             id = track["uri"]
-            artist = ", ".join(track["artists"])
             track_details = spotify.get_chosen_song(id)
             caption = f'👤Artist: `{artist}`\n🔢Track : {track_details["track_no"]} of {album_details["total_tracks"]}\n🎵Song : `{track_details["name"]}`\n'
             send_audios_or_previews(track_details, caption, chat_id, False)
@@ -189,13 +223,11 @@ def send_checker(list_of_type: list, chat_id: str, current_page: int):
         reply_markup = keyboard.make_for_type(list_of_type, current_page)
     except BaseException:
         reply_markup = keyboard.make_for_trending(list_of_type)
-        print("Done")
     global make_id
     try:
         bot.edit_message_reply_markup(
             chat_id, make_id, reply_markup=reply_markup)
     except Exception as e:
-        logger.info(f"Exception is {e}. Thus making a new one")
         make = bot.send_message(chat_id,
                                 "Awesome which ones tracks do you want to get?",
                                 reply_markup=reply_markup)
@@ -219,14 +251,18 @@ def process_callback_query(call):
     if data.startswith('album') or data.startswith('single') or data.startswith(
         'compilation') or data.startswith(
             'toptracks'):  # Handle for list of type of an artist
+        bot.answer_callback_query(call.id)
         handle_list_callback(call)
     elif data.startswith("lyrics"):  # Handle for sending lyrics of a song
         handle_lyrics_callback(call)
-    elif data.startswith("close"):  # Handle for closing all Inline markups
+    elif data.startswith("close"):
+        bot.answer_callback_query(call.id)  # Handle for closing all Inline markups
         handle_close_callback(call)
     elif data.startswith("_"):
+        bot.answer_callback_query(call.id)
         handle_pagination_callback(call)
     elif data.startswith("result_"):  # Handle for possible results of an artist
+        bot.answer_callback_query(call.id)
         handle_result_callback(call)
     else:
         bot.delete_message(call.message.chat.id, call.message.id)
@@ -306,20 +342,24 @@ def handle_lyrics_callback(call):
                 lyrics = lyricsgenius_lyrics(artist, title)
             except BaseException:
                 lyrics = musicxmatch_lyrics(artist, title)
-    caption = f"👤Artist: `{', '.join(track_details['artists'])}`\n🎵Song : `{track_details['name']}`\n━━━━━━━━━━━━\n📀Album : `{track_details['album']}`\n🔢Track : {track_details['track_no']} of {track_details['total_tracks']}\n⭐️ Released: `{track_details['release_date']}`\n\n🎶Lyrics📝:\n\n`{lyrics}`"
-    try:
-        bot.reply_to(call.message,
-                         text=caption,
-                         reply_markup=keyboard.start_markup)
-    except BaseException:
-        splitted_text = util.smart_split(caption, chars_per_string=3000)
-        for text in splitted_text:
-            try:
-                bot.reply_to(call.message,
-                                 text=caption,
-                                 reply_markup=keyboard.start_markup)
-            except Exception as e:
-                bot.answer_callback_query(call.id, e)
+    if lyrics == None or lyrics == "":
+        bot.answer_callback_query(call.id, text=f"'{title}' lyrics not found!",show_alert=True)
+    else:
+        bot.answer_callback_query(call.id)
+        caption = f"👤Artist: `{', '.join(track_details['artists'])}`\n🎵Song : `{track_details['name']}`\n━━━━━━━━━━━━\n📀Album : `{track_details['album']}`\n🔢Track : {track_details['track_no']} of {track_details['total_tracks']}\n⭐️ Released: `{track_details['release_date']}`\n\n🎶Lyrics📝:\n\n`{lyrics}`"
+        try:
+            bot.reply_to(call.message,
+                            text=caption,
+                            reply_markup=keyboard.start_markup)
+        except BaseException:
+            splitted_text = util.smart_split(caption, chars_per_string=3000)
+            for text in splitted_text:
+                try:
+                    bot.reply_to(call.message,
+                                    text=caption,
+                                    reply_markup=keyboard.start_markup)
+                except Exception as e:
+                    bot.answer_callback_query(call.id, e)
 
 
 def handle_close_callback(call):
@@ -327,31 +367,11 @@ def handle_close_callback(call):
 
 
 def send_chosen_track(track_details, message):
-    caption = f'👤Artist: `{", ".join(track_details["artists"])}`\n🎵Song : `{track_details["name"]}`\n━━━━━━━━━━━━\n📀Album : `{track_details["album"]}`\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n⭐️ Released: `{track_details["release_date"]}`'
+    duration = track_details["duration_ms"]
+    minutes = duration // 60000
+    seconds = int((duration % 60000)/1000)
+    caption = f'👤Artist: `{", ".join(track_details["artists"])}`\n🎵Song : `{track_details["name"]}`\n━━━━━━━━━━━━\n📀Album : `{track_details["album"]}`\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n⭐️ Released: `{track_details["release_date"]}`\n⌚Duration: `{minutes}:{seconds}`\n🔞Explicit: {track_details["explicit"]}'
     send_audios_or_previews(track_details, caption, message.chat.id, True)
 
 
-def send_song_data(message, query=None):
-    if query != None:
-        artist, title = check_input(query)
-    else:
-        query = message.text
-        artist, title = check_input(query)
-    possible_tracks = spotify.song(artist, title)
-    no_of_results = len(possible_tracks)
-    if no_of_results == 0:
-        bot.send_message(
-            message.chat.id,
-            f"Song `{query}` not found!⚠. Please check your spelling and also include special characters.\nTry again? /song",
-            reply_markup=keyboard.start_markup)
-        return
-    result_string = [
-        f"{idx+1}. `{item['name']}` - {item['artists']}"
-        for idx, item in enumerate(possible_tracks)
-    ]
-    result_string = '\n'.join(result_string)
-    artists_keyboard = keyboard.keyboard_for_results(results=possible_tracks)
-    bot.send_message(
-        message.chat.id,
-        f"Found {no_of_results} result(s) from the search `{query}` ~ {message.from_user.first_name}\n\n{result_string}",
-        reply_markup=artists_keyboard)
+
