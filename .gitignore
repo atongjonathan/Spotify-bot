@@ -9,3 +9,4 @@ logs.txt
 .cache
 /.local
 spot.exe
+config.env
