@@ -24,7 +24,6 @@ lyricsgenius==3.0.1
 markdown-it-py==3.0.0
 mdurl==0.1.2
 mutagen==1.47.0
-numpy==1.26.3
 pillow==10.2.0
 platformdirs==3.11.0
 pycryptodomex==3.20.0

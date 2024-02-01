@@ -192,13 +192,11 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
 
 def get_album_songs(uri, chat_id):
     album_details = spotify.album("", "", uri)
-    artist = ", ".join(album_details["artists"])
     if isinstance(album_details, str):
         track_details = spotify.get_chosen_song(uri)
-        caption = f'👤Artist: `{ ", ".join(track_details["artists"])}`\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n🎵Song : `{track_details["name"]}`\n'
-        send_audios_or_previews(track_details, caption, chat_id, True)
+        send_chosen_track(track_details, chat_id)
     else:
-        caption = f'👤Artist: `{artist}`\n📀 Album: `{album_details["name"]}`\n⭐️ Released: `{album_details["release_date"]}`\n🔢 Total Tracks: {album_details["total_tracks"]}'
+        caption = f'👤Artist: `{album_details["artists"]}`\n📀 Album: `{album_details["name"]}`\n⭐️ Released: `{album_details["release_date"]}`\n🔢 Total Tracks: {album_details["total_tracks"]}'
         bot.send_photo(chat_id,
                        album_details["images"],
                        caption=caption,
@@ -207,11 +205,11 @@ def get_album_songs(uri, chat_id):
         for track in album_tracks:
             id = track["uri"]
             track_details = spotify.get_chosen_song(id)
-            caption = f'👤Artist: `{artist}`\n🔢Track : {track_details["track_no"]} of {album_details["total_tracks"]}\n🎵Song : `{track_details["name"]}`\n'
+            caption = f'👤Artist: `{track_details["artists"]}`\n🔢Track : {track_details["track_no"]} of {album_details["total_tracks"]}\n🎵Song : `{track_details["name"]}`\n'
             send_audios_or_previews(track_details, caption, chat_id, False)
         bot.send_message(
             chat_id,
-            f'Those are all the {track_details["total_tracks"]} track(s) in "`{album_details["name"]}`" by `{artist}`. 💪!',
+            f'Those are all the {track_details["total_tracks"]} track(s) in "`{album_details["name"]}`" by `{album_details["artists"]}`. 💪!',
             reply_markup=keyboard.start_markup)
 
 
@@ -303,7 +301,7 @@ def handle_result_callback(call):
         send_chosen_artist(artist_details, call.message)
     except BaseException:
         track_details = spotify.get_chosen_song(uri)
-        send_chosen_track(track_details, call.message)
+        send_chosen_track(track_details, call.message.chat.id)
 
 
 def handle_pagination_callback(call):
@@ -366,12 +364,12 @@ def handle_close_callback(call):
     bot.delete_message(call.message.chat.id, call.message.id)
 
 
-def send_chosen_track(track_details, message):
+def send_chosen_track(track_details, chat_id):
     duration = track_details["duration_ms"]
     minutes = duration // 60000
     seconds = int((duration % 60000)/1000)
     caption = f'👤Artist: `{", ".join(track_details["artists"])}`\n🎵Song : `{track_details["name"]}`\n━━━━━━━━━━━━\n📀Album : `{track_details["album"]}`\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n⭐️ Released: `{track_details["release_date"]}`\n⌚Duration: `{minutes}:{seconds}`\n🔞Explicit: {track_details["explicit"]}'
-    send_audios_or_previews(track_details, caption, message.chat.id, True)
+    send_audios_or_previews(track_details, caption, chat_id, True)
 
 
 

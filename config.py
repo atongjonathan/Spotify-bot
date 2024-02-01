@@ -12,4 +12,5 @@ GCS_API_KEY = os.environ.get("GCS_API_KEY")
 MUSICXMATCH_API_KEY = os.environ.get("MUSICXMATCH_API_KEY")
 GENIUS_ACCESS_TOKEN = os.environ.get('GENIUS_ACCESS_TOKEN')
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
+OWNER_CHAT_ID = os.environ.get("OWNER_CHAT_ID")
 
