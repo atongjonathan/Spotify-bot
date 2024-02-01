@@ -146,7 +146,7 @@ class Keyboard():
         for idx, item in enumerate(lengths):
             if (item > 0):  # Make only when more than 0
                 button = types.InlineKeyboardButton(
-                    f"View {name}'s {type[idx].title()}s🧐", callback_data=f"{type[idx]}_{uri}")  # type of data speciified for the artist of that uri
+                    f"{name}'s {type[idx].title()}s🧐", callback_data=f"{type[idx]}_{uri}")  # type of data speciified for the artist of that uri
                 keyboard.row(button)
         return keyboard
 
