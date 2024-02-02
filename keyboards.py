@@ -110,6 +110,13 @@ class Keyboard():
         keyboard.add(lyrics_button)
         return keyboard
 
+    def link_handler(self, link):
+        keyboard = types.InlineKeyboardMarkup()
+        lyrics_button = types.InlineKeyboardButton(
+            text=f'🚀Stream on Spotify?', url=link)
+        keyboard.add(lyrics_button)
+        return keyboard        
+
     def make_for_trending(self, list_of_trending):
         keyboard = types.InlineKeyboardMarkup()
         close = types.InlineKeyboardButton(

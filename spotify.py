@@ -202,7 +202,7 @@ class Spotify():
         track_results = []
         if len(possible_tracks) == 0:
             logger.info(f"No tracks found for {artist}, {title}")
-            return
+            return []
         for track in possible_tracks:
             track_details = {
                 'artists': ', '.join([artist["name"] for artist in track["album"]["artists"]]),
