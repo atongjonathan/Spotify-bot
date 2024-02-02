@@ -88,6 +88,22 @@ def preview(message):
     sgbot.get_search_query(message, "snippet", sgbot.search_song, song_reply)
 
 
+@bot.message_handler(regexp="(https?:\\/\\/)?(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%_\\+.~#?&//=]*)?")
+def regex(message):
+    link = message.text
+    mini_link = link.split("spotify.com/")[1].split("?")[0]
+    link_type = mini_link.split("/")[0]
+    uri = mini_link.split("/")[1]
+    try:
+        if link_type == 'album':
+            sgbot.get_album_songs(uri, message.chat.id)
+        elif link_type == 'track':
+            track_details = sgbot.spotify.get_chosen_song(uri)
+            sgbot.send_chosen_track(track_details, message.chat.id)
+    except Exception as e:
+        bot.reply_to(message, "Process unsuccessful! Check link or try again later")
+
+
 @bot.message_handler(func=lambda message: True)
 def handle_text(message):
     if message.text == "⬆️ Show command buttons":
@@ -108,7 +124,4 @@ def handle_query(call):
 
 if __name__ == '__main__':
     logger.info("Bot is running :>")
-    try:
-        bot.polling(non_stop=True)
-    except BaseException:
-        bot.polling(non_stop=True)
+    bot.polling(non_stop=True)
