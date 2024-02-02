@@ -115,7 +115,7 @@ class Keyboard():
         lyrics_button = types.InlineKeyboardButton(
             text=f'🚀Stream on Spotify?', url=link)
         keyboard.add(lyrics_button)
-        return keyboard        
+        return keyboard
 
     def make_for_trending(self, list_of_trending):
         keyboard = types.InlineKeyboardMarkup()

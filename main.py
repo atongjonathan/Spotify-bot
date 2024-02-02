@@ -4,7 +4,6 @@ from logging import FileHandler, StreamHandler, INFO, basicConfig, getLogger
 from bot import SGBot
 
 
-
 basicConfig(
     format='SG-Bot | %(levelname)s | %(asctime)s - %(name)s - line %(lineno)d | %(message)s',
     handlers=[FileHandler('logs.txt'),
@@ -30,7 +29,8 @@ def welcome(message):
 @bot.message_handler(commands=["artist"])
 def artist(message):
     artist_reply = "Send me the name of the artist"
-    sgbot.get_search_query(message, "artist", sgbot.search_artist, artist_reply)
+    sgbot.get_search_query(
+        message, "artist", sgbot.search_artist, artist_reply)
 
 
 @bot.message_handler(commands=["song"])
@@ -46,12 +46,12 @@ def trending(message):
     if " " not in text:
         no_of_songs = 10
     else:
-        no_of_songs = int(text.replace(f"/trending ", ""))        
+        no_of_songs = int(text.replace(f"/trending ", ""))
         if no_of_songs > 100:
-            bot.reply_to(message, "Number requested to should be less than 100")
+            bot.reply_to(
+                message, "Number requested to should be less than 100")
             return
     sgbot.search_trending(message, no_of_songs=no_of_songs)
-
 
 
 @bot.message_handler(commands=['commands'])
@@ -62,13 +62,11 @@ def commands(message):
     )
 
 
-
-
 @bot.message_handler(commands=['logs'])
 def logs(message):
     with open("logs.txt") as file:
         bot.send_document(message.chat.id, file,
-                        reply_markup=sgbot.keyboard.start_markup)
+                          reply_markup=sgbot.keyboard.start_markup)
 
 
 @bot.message_handler(commands=['ping'])
@@ -89,16 +87,17 @@ def preview(message):
     song_reply = "Send me the song title followed by the artist separated by a comma for optimal results"
     sgbot.get_search_query(message, "snippet", sgbot.search_song, song_reply)
 
+
 @bot.message_handler(func=lambda message: True)
 def handle_text(message):
     if message.text == "⬆️ Show command buttons":
         bot.reply_to(message,
-                         "⬆️ Show command buttons",
-                         reply_markup=sgbot.keyboard.start_markup)
+                     "⬆️ Show command buttons",
+                     reply_markup=sgbot.keyboard.start_markup)
     elif message.text == "⬇️ Hide command buttons":
         bot.reply_to(message,
-                         "⬇️ Hide command buttons",
-                         reply_markup=sgbot.keyboard.hide_keyboard)
+                     "⬇️ Hide command buttons",
+                     reply_markup=sgbot.keyboard.hide_keyboard)
 
 
 # Set up a callback query handler
@@ -108,7 +107,7 @@ def handle_query(call):
 
 
 if __name__ == '__main__':
-    logger.info("Bot is running :>") 
+    logger.info("Bot is running :>")
     try:
         bot.polling(non_stop=True)
     except BaseException:
