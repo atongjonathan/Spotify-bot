@@ -4,7 +4,7 @@ import telebot
 from config import TELEGRAM_BOT_TOKEN
 import os
 import time
-from get_lyrics import azlyrics, lyrics_extractor_lyrics, musicxmatch_lyrics, lyricsgenius_lyrics
+from get_lyrics import musicxmatch_lyrics
 from telebot import util
 from logging import getLogger
 from functions import download
@@ -329,18 +329,10 @@ def handle_lyrics_callback(call):
     artist = ', '.join(track_details['artists'])
     title = track_details["name"]
     try:
-        logger.info("Searching by Lyrics Extractor")
-        lyrics = lyrics_extractor_lyrics(artist, title)
-    except BaseException:
-        try:
-            logger.info("Searching by Musicxmatch Extractor")
-            lyrics = azlyrics(artist, title)
-        except BaseException:
-            try:
-                logger.info("Searching by LyricsGenius Extractor")
-                lyrics = lyricsgenius_lyrics(artist, title)
-            except BaseException:
-                lyrics = musicxmatch_lyrics(artist, title)
+        lyrics = musicxmatch_lyrics(artist, title)
+    except Exception as e:
+        logger.error(e)
+        lyrics = None
     if lyrics == None or lyrics == "":
         bot.answer_callback_query(call.id, text=f"'{title}' lyrics not found!",show_alert=True)
     else:
@@ -369,7 +361,7 @@ def send_chosen_track(track_details, chat_id):
     duration = track_details["duration_ms"]
     minutes = duration // 60000
     seconds = int((duration % 60000)/1000)
-    caption = f'👤Artist: `{", ".join(track_details["artists"])}`\n🎵Song : `{track_details["name"]}`\n━━━━━━━━━━━━\n📀Album : `{track_details["album"]}`\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n⭐️ Released: `{track_details["release_date"]}`\n⌚Duration: `{minutes}:{seconds}`\n🔞Explicit: {track_details["explicit"]}\n🚀Stream: {track_details["external_url"]}'
+    caption = f'👤Artist: `{", ".join(track_details["artists"])}`\n🎵Song : `{track_details["name"]}`\n━━━━━━━━━━━━\n📀Album : `{track_details["album"]}`\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n⭐️ Released: `{track_details["release_date"]}`\n⌚Duration: `{minutes}:{seconds}`\n🔞Is Explicit: {track_details["explicit"]}\n🚀Stream: {track_details["external_url"]}'
     send_audios_or_previews(track_details, caption, chat_id, True)
 
 
