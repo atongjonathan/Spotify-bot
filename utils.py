@@ -45,7 +45,7 @@ def send_top_songs(call):
     return
 
 
-def search_song(message, query=None):
+def search_song(message, query=None):       
     """
       Search for the song from the string provided.
 
@@ -161,13 +161,14 @@ def send_audios_or_previews(track_details, caption, chat_id, send_photo):
                 with open(file_path, "rb") as file:
                     logger.info(f"Sending {f}", )
                     bot.send_chat_action(chat_id, "upload_audio")
-                    bot.send_audio(chat_id,
+                    song = bot.send_audio(chat_id,
                                    file,
                                    title=title,
                                    performer=artist,
                                    reply_markup=reply_markup,
                                    caption=f"#{artist.replace(' ','')}")
-                    logger.info("Sent successfully")
+                print(song.id, song.message_id)    
+                logger.info("Sent successfully")
                 os.remove(file_path)
             else:
                 print(f, " is not a song")
@@ -196,7 +197,7 @@ def get_album_songs(uri, chat_id):
         track_details = spotify.get_chosen_song(uri)
         send_chosen_track(track_details, chat_id)
     else:
-        caption = f'👤Artist: `{album_details["artists"]}`\n📀 Album: `{album_details["name"]}`\n⭐️ Released: `{album_details["release_date"]}`\n🔢 Total Tracks: {album_details["total_tracks"]}'
+        caption = f'👤Artist: `{", ".join(album_details["artists"])}`\n📀 Album: `{album_details["name"]}`\n⭐️ Released: `{album_details["release_date"]}`\n🔢 Total Tracks: {album_details["total_tracks"]}'
         bot.send_photo(chat_id,
                        album_details["images"],
                        caption=caption,
@@ -368,7 +369,7 @@ def send_chosen_track(track_details, chat_id):
     duration = track_details["duration_ms"]
     minutes = duration // 60000
     seconds = int((duration % 60000)/1000)
-    caption = f'👤Artist: `{", ".join(track_details["artists"])}`\n🎵Song : `{track_details["name"]}`\n━━━━━━━━━━━━\n📀Album : `{track_details["album"]}`\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n⭐️ Released: `{track_details["release_date"]}`\n⌚Duration: `{minutes}:{seconds}`\n🔞Explicit: {track_details["explicit"]}'
+    caption = f'👤Artist: `{", ".join(track_details["artists"])}`\n🎵Song : `{track_details["name"]}`\n━━━━━━━━━━━━\n📀Album : `{track_details["album"]}`\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n⭐️ Released: `{track_details["release_date"]}`\n⌚Duration: `{minutes}:{seconds}`\n🔞Explicit: {track_details["explicit"]}\n🚀Stream: {track_details["external_url"]}'
     send_audios_or_previews(track_details, caption, chat_id, True)
 
 
