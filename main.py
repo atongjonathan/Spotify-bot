@@ -101,6 +101,7 @@ def regex(message):
             track_details = sgbot.spotify.get_chosen_song(uri)
             sgbot.send_chosen_track(track_details, message.chat.id)
     except Exception as e:
+        print(e)
         bot.reply_to(message, "Process unsuccessful! Check link or try again later")
 
 

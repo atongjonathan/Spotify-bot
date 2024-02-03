@@ -1,17 +1,18 @@
+import telebot
 import os
-from spotify import Spotify
-from keyboards import Keyboard
-from logging import getLogger
-import billboard
-from get_lyrics import musicxmatch_lyrics
-from logging import getLogger
 import time
 import requests
 from io import BytesIO
 from telebot import util
+from spotify import Spotify
+from keyboards import Keyboard
+import billboard
 from functions import download
-from config import TELEGRAM_BOT_TOKEN
-import telebot
+from config import TELEGRAM_BOT_TOKEN, DB_CHANNEL
+from logging import getLogger
+from get_lyrics import musicxmatch_lyrics
+from db import insert_json_data, get_all_json_data, create_table
+
 
 
 class SGBot():
@@ -173,11 +174,51 @@ class SGBot():
                                       lengths))
         self.BOT.pin_chat_message(message.chat.id, pin.id)
 
+    def send_download(self, chat_id, title, performer, reply_markup, hashtag):
+        for f in os.listdir('output'):
+            file_path = os.path.join("output", f)
+            if file_path.endswith(".mp3"):
+                with open(file_path, "rb") as file:
+                    self.logger.info(f"Sending {f}", )
+                    self.BOT.send_chat_action(chat_id, "upload_audio")
+                    song = self.BOT.send_audio(chat_id, file, title=title,
+                                               performer=performer,
+                                               reply_markup=reply_markup,
+                                               caption=hashtag)
+            os.remove(file_path)
+            copied_msg = self.BOT.forward_message(
+                DB_CHANNEL, chat_id, song.message_id)
+            data = copied_msg.json['audio']
+            data["message_id"] = copied_msg.message_id
+            create_table()
+            insert_json_data(data)
+            self.logger.info("Sent successfully and added to db")
+
+    def send_preview(self, track_url, chat_id, title, performer, reply_markup, preview_url, hashtag):
+        if preview_url is None:
+            keyboard = self.keyboard.link_handler(track_url)
+            self.BOT.send_message(chat_id,
+                                  text=f"No Preview found for `{title}`",
+                                  reply_markup=keyboard)
+        else:
+            response = requests.get(preview_url)
+            audio_content = response.content
+            audio_io = BytesIO(audio_content)
+            self.BOT.send_chat_action(chat_id, "upload_audio")
+            self.BOT.send_audio(chat_id, audio_io, title=title,
+                                performer=performer,
+                                reply_markup=reply_markup,
+                                caption=hashtag)
+
     def send_audios_or_previews(self, track_details, caption, chat_id, send_photo):
         track_url = track_details['external_url']
         reply_markup = self.keyboard.lyrics_handler(track_details['name'],
                                                     track_details['uri'])
         title = track_details["name"]
+        performer = ", ".join(track_details['artists'])
+        artists = [artist.replace(" ", '') for artist in track_details['artists']]
+        hashtag = f'#{"".join(artists)}'
+        preview_url = track_details['preview_url']
         if send_photo:
             time.sleep(1)
             keyboard = self.keyboard.link_handler(track_url)
@@ -187,36 +228,19 @@ class SGBot():
                                 reply_markup=keyboard)
         update = self.BOT.send_message(
             chat_id, f"...⚡Downloading track no {track_details['track_no']} - `{title}`⚡ ...")
+        retrieved_data = get_all_json_data()
+        message_id = [message["message_id"] for message in retrieved_data if performer ==
+                      message["performer"] and title == message["title"]]
         if self.isPreview:
-            if track_details['preview_url'] is None:
-                keyboard = self.keyboard.link_handler(track_url)
-                self.BOT.send_message(chat_id,
-                                      text=f"No Preview found for `{title}`",
-                                      reply_markup=keyboard)
-            else:
-                response = requests.get(track_details['preview_url'])
-                audio_content = response.content
-                audio_io = BytesIO(audio_content)
-                self.BOT.send_chat_action(chat_id, "upload_audio")
-                self.BOT.send_audio(chat_id, audio_io, title=title,
-                                    performer=track_details['artists'][0],
-                                    reply_markup=reply_markup,
-                                    caption=f"#{''.join(track_details['artists']).replace(' ', '')}")
+            self.send_preview(track_details, track_url, chat_id,
+                              title, performer, reply_markup, preview_url)
+
+        elif len(message_id) > 0:
+            self.BOT.copy_message(chat_id, DB_CHANNEL, message_id[0], reply_markup=reply_markup, caption=hashtag)
 
         else:
             if (download(track_link=track_url)):
-                for f in os.listdir('output'):
-                    file_path = os.path.join("output", f)
-                    if file_path.endswith(".mp3"):
-                        with open(file_path, "rb") as file:
-                            self.logger.info(f"Sending {f}", )
-                            self.BOT.send_chat_action(chat_id, "upload_audio")
-                            song = self.BOT.send_audio(chat_id, file, title=title,
-                                                       performer=track_details['artists'][0],
-                                                       reply_markup=reply_markup,
-                                                       caption=f"#{''.join(track_details['artists']).replace(' ', '')}")
-                        self.logger.info("Sent successfully")
-                        os.remove(file_path)
+                self.send_download(chat_id, title, performer, reply_markup, hashtag)
         self.BOT.delete_message(chat_id, update.message_id)
 
     def get_album_songs(self, uri, chat_id):
