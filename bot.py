@@ -194,7 +194,7 @@ class SGBot():
             insert_json_data(data)
             self.logger.info("Sent successfully and added to db")
 
-    def send_preview(self, track_url, chat_id, title, performer, reply_markup, preview_url, hashtag):
+    def send_preview(self, chat_id, title, performer, reply_markup, preview_url, hashtag):
         if preview_url is None:
             self.BOT.send_message(chat_id,
                                   text=f"No Preview found for `{title}`")
@@ -233,7 +233,11 @@ class SGBot():
             self.send_preview(track_url, chat_id, title, performer, markup, preview_url, hashtag)
 
         elif len(message_id) > 0:
-            self.BOT.copy_message(chat_id, DB_CHANNEL, message_id[0], reply_markup=markup, caption=hashtag)
+            copied = self.BOT.copy_message(chat_id, DB_CHANNEL, message_id[0], reply_markup=markup, caption=hashtag)
+            try:
+                self.BOT.edit_message_reply_markup(chat_id, copied.message_id, reply_markup=markup)
+            except:
+                pass
 
         else:
             if (download(track_link=track_url)):
