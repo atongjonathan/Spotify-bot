@@ -230,7 +230,7 @@ class SGBot():
         markup = self.keyboard.lyrics_handler(track_details['name'],
                                                     track_details['uri'])                      
         if self.isPreview:
-            self.send_preview(track_url, chat_id, title, performer, markup, preview_url, hashtag)
+            self.send_preview(chat_id, title, performer, markup, preview_url, hashtag)
 
         elif len(message_id) > 0:
             copied = self.BOT.copy_message(chat_id, DB_CHANNEL, message_id[0], reply_markup=markup, caption=hashtag)
