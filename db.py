@@ -32,7 +32,7 @@ def insert_json_data(json_data):
 
 def get_all_json_data():
     # Connect to the SQLite database
-    conn = sqlite3.connect('example.db')
+    conn = sqlite3.connect('channel_music.db')
     cursor = conn.cursor()
 
     # Retrieve all rows from the table
@@ -46,3 +46,4 @@ def get_all_json_data():
     conn.close()
     return result
 
+create_table()

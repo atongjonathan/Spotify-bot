@@ -196,10 +196,8 @@ class SGBot():
 
     def send_preview(self, track_url, chat_id, title, performer, reply_markup, preview_url, hashtag):
         if preview_url is None:
-            keyboard = self.keyboard.link_handler(track_url)
             self.BOT.send_message(chat_id,
-                                  text=f"No Preview found for `{title}`",
-                                  reply_markup=keyboard)
+                                  text=f"No Preview found for `{title}`")
         else:
             response = requests.get(preview_url)
             audio_content = response.content
@@ -212,8 +210,6 @@ class SGBot():
 
     def send_audios_or_previews(self, track_details, caption, chat_id, send_photo):
         track_url = track_details['external_url']
-        reply_markup = self.keyboard.lyrics_handler(track_details['name'],
-                                                    track_details['uri'])
         title = track_details["name"]
         performer = ", ".join(track_details['artists'])
         artists = [artist.replace(" ", '') for artist in track_details['artists']]
@@ -231,16 +227,17 @@ class SGBot():
         retrieved_data = get_all_json_data()
         message_id = [message["message_id"] for message in retrieved_data if performer ==
                       message["performer"] and title == message["title"]]
+        markup = self.keyboard.lyrics_handler(track_details['name'],
+                                                    track_details['uri'])                      
         if self.isPreview:
-            self.send_preview(track_details, track_url, chat_id,
-                              title, performer, reply_markup, preview_url)
+            self.send_preview(track_url, chat_id, title, performer, markup, preview_url, hashtag)
 
         elif len(message_id) > 0:
-            self.BOT.copy_message(chat_id, DB_CHANNEL, message_id[0], reply_markup=reply_markup, caption=hashtag)
+            self.BOT.copy_message(chat_id, DB_CHANNEL, message_id[0], reply_markup=markup, caption=hashtag)
 
         else:
             if (download(track_link=track_url)):
-                self.send_download(chat_id, title, performer, reply_markup, hashtag)
+                self.send_download(chat_id, title, performer, markup, hashtag)
         self.BOT.delete_message(chat_id, update.message_id)
 
     def get_album_songs(self, uri, chat_id):
