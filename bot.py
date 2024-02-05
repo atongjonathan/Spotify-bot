@@ -11,7 +11,7 @@ from functions import download
 from config import TELEGRAM_BOT_TOKEN, DB_CHANNEL
 from logging import getLogger
 from get_lyrics import musicxmatch_lyrics
-from db import insert_json_data, get_all_json_data, create_table
+from db import insert_json_data, get_all_data, create_table
 
 
 
@@ -224,7 +224,7 @@ class SGBot():
                                 reply_markup=keyboard)
         update = self.BOT.send_message(
             chat_id, f"...⚡Downloading track no {track_details['track_no']} - `{title}`⚡ ...")
-        retrieved_data = get_all_json_data()
+        retrieved_data = get_all_data("json_data")
         message_id = [message["message_id"] for message in retrieved_data if performer ==
                       message["performer"] and title == message["title"]]
         markup = self.keyboard.lyrics_handler(track_details['name'],
@@ -266,6 +266,24 @@ class SGBot():
                 chat_id,
                 f'Those are all the {track_details["total_tracks"]} track(s) in "`{album_details["name"]}`" by `{", ".join(album_details["artists"])}`. 💪!',
                 reply_markup=self.keyboard.start_markup)
+
+    def send_playlist(self, uri, chat_id):
+        playlist = self.spotify.sp.playlist(uri)
+        owner = playlist['owner']['display_name']
+        description = playlist['description']
+        caption = f"👤Owner: `{owner}`\n📀 Description: `{description}"
+        self.BOT.send_photo(chat_id, playlist["images"][0]["url"], caption=caption, parse_mode="HTML")
+        for song in playlist["tracks"]["items"]:
+            id = song["track"]["id"]
+            track_details = self.spotify.get_chosen_song(id)
+            self.send_audios_or_previews(track_details,"", chat_id, False)
+        self.BOT.send_message(
+                chat_id,
+                f'Those are all the {playlist["tracks"]["total"]} track(s) in "`{description}`" by `{owner}`. 💪!',
+                reply_markup=self.keyboard.start_markup)            
+        
+
+        
 
     def send_checker(self, list_of_type: list, chat_id: str, current_page: int):
         """

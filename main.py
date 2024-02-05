@@ -2,6 +2,7 @@ import time
 import warnings
 from logging import FileHandler, StreamHandler, INFO, basicConfig, getLogger
 from bot import SGBot
+from db import insert_user
 
 
 basicConfig(
@@ -20,6 +21,17 @@ def welcome(message):
     logger.info(
         f"{message.from_user.first_name} {message.from_user.last_name} @{message.from_user.username} accessed Chat: {message.chat.id}"
     )
+    user = {
+        "first_name": message.from_user.first_name,
+        "last_name": message.from_user.last_name,
+        "user_name": message.from_user.username,
+        "chat_id": message.chat.id,
+    }
+    try:
+        insert_user(user)
+        logger.info("User added to DB")
+    except:
+        logger.info("User Already Exists in DB")
     bot.send_message(
         message.chat.id,
         f"Hello `{message.from_user.first_name}`, Welcome to Spotify SG✨'s bot!. For help see commands?👉 /commands",
@@ -100,6 +112,8 @@ def regex(message):
         elif link_type == 'track':
             track_details = sgbot.spotify.get_chosen_song(uri)
             sgbot.send_chosen_track(track_details, message.chat.id)
+        elif link_type == "playlist":
+            sgbot.send_playlist(uri, message.chat.id)            
     except Exception as e:
         print(e)
         bot.reply_to(message, "Process unsuccessful! Check link or try again later")
