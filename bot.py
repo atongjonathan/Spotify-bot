@@ -14,7 +14,6 @@ from get_lyrics import musicxmatch_lyrics
 from db import insert_json_data, get_all_data, create_table
 
 
-
 class SGBot():
     def __init__(self) -> None:
         self.BOT = telebot.TeleBot((TELEGRAM_BOT_TOKEN), parse_mode='markdown')
@@ -41,7 +40,7 @@ class SGBot():
 
     def search_trending(self, message, no_of_songs):
         reply = self.BOT.send_message(
-            message.chat.id, "Awesome getting trending somgs in a few")
+            message.chat.id, f"Awesome getting the top {no_of_songs} hits in a few ...")
         hot_100 = billboard.ChartData("hot-100")[:no_of_songs]
         track_details = [self.spotify.song(artist=item.artist, title=item.title)[
             0] for item in hot_100]
@@ -197,7 +196,7 @@ class SGBot():
     def send_preview(self, chat_id, title, performer, reply_markup, preview_url, hashtag):
         if preview_url is None:
             self.BOT.send_message(chat_id,
-                                  text=f"No Preview found for `{title}`")
+                                  text=f"No Preview found for `{title}`", reply_markup=reply_markup)
         else:
             response = requests.get(preview_url)
             audio_content = response.content
@@ -212,7 +211,8 @@ class SGBot():
         track_url = track_details['external_url']
         title = track_details["name"]
         performer = ", ".join(track_details['artists'])
-        artists = [artist.replace(" ", '') for artist in track_details['artists']]
+        artists = [artist.replace(" ", '')
+                   for artist in track_details['artists']]
         hashtag = f'#{"".join(artists)}'
         preview_url = track_details['preview_url']
         if send_photo:
@@ -228,14 +228,18 @@ class SGBot():
         message_id = [message["message_id"] for message in retrieved_data if performer ==
                       message["performer"] and title == message["title"]]
         markup = self.keyboard.lyrics_handler(track_details['name'],
-                                                    track_details['uri'])                      
+                                              track_details['uri'])
         if self.isPreview:
-            self.send_preview(chat_id, title, performer, markup, preview_url, hashtag)
+            self.send_preview(chat_id, title, performer,
+                              markup, preview_url, hashtag)
+            self.sgbot.isPreview = False
 
         elif len(message_id) > 0:
-            copied = self.BOT.copy_message(chat_id, DB_CHANNEL, message_id[0], reply_markup=markup, caption=hashtag)
+            copied = self.BOT.copy_message(
+                chat_id, DB_CHANNEL, message_id[0], reply_markup=markup, caption=hashtag)
             try:
-                self.BOT.edit_message_reply_markup(chat_id, copied.message_id, reply_markup=markup)
+                self.BOT.edit_message_reply_markup(
+                    chat_id, copied.message_id, reply_markup=markup)
             except:
                 pass
 
@@ -271,19 +275,17 @@ class SGBot():
         playlist = self.spotify.sp.playlist(uri)
         owner = playlist['owner']['display_name']
         description = playlist['description']
-        caption = f"👤Owner: `{owner}`\n📀 Description: `{description}"
-        self.BOT.send_photo(chat_id, playlist["images"][0]["url"], caption=caption, parse_mode="HTML")
+        caption = f"👤Owner: `{owner}`\n📀 Description: `{description}`"
+        self.BOT.send_photo(
+            chat_id, playlist["images"][0]["url"], caption=caption)
         for song in playlist["tracks"]["items"]:
             id = song["track"]["id"]
             track_details = self.spotify.get_chosen_song(id)
-            self.send_audios_or_previews(track_details,"", chat_id, False)
+            self.send_audios_or_previews(track_details, "", chat_id, False)
         self.BOT.send_message(
-                chat_id,
-                f'Those are all the {playlist["tracks"]["total"]} track(s) in "`{description}`" by `{owner}`. 💪!',
-                reply_markup=self.keyboard.start_markup)            
-        
-
-        
+            chat_id,
+            f'Those are all the {playlist["tracks"]["total"]} track(s) in "`{description}`" by `{owner}`. 💪!',
+            reply_markup=self.keyboard.start_markup)
 
     def send_checker(self, list_of_type: list, chat_id: str, current_page: int):
         """
