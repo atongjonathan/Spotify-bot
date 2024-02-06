@@ -16,7 +16,7 @@ from db import insert_json_data, get_all_data, create_table
 
 class SGBot():
     def __init__(self) -> None:
-        self.BOT = telebot.TeleBot((TELEGRAM_BOT_TOKEN), parse_mode='markdown')
+        self.BOT = telebot.TeleBot('6947530576:AAEcuqnxIZ44oTbCCI6A2AK3PiJevmJ7CwI', parse_mode='markdown')
         self.isPreview = False
         self.keyboards_list = []
         self.spotify = Spotify()
@@ -34,7 +34,15 @@ class SGBot():
         text = message.text
         if " " in text:
             query = text.replace(f"/{command} ", "")
-            function(message, query)
+            if "trending" in query and command == "snippet":
+                self.isPreview = True
+                if " " not in query:
+                    no_of_songs = 10
+                else:
+                    no_of_songs = int(text.replace(f"/snippet trending ", ""))
+                self.search_trending(message, no_of_songs)
+            else:
+                function(message, query)
         else:
             self.reply_to_query(message, reply_text, function)
 
@@ -48,7 +56,7 @@ class SGBot():
             f'{idx+1}. `{item["name"]}` - {item["artists"]}' for idx, item in enumerate(track_details)]
         result_string = '\n'.join(result_string)
         artists_keyboard = self.keyboard.keyboard_for_results(
-            results=track_details)
+            results=track_details, isTrending=True, isPreview=self.isPreview)
         self.BOT.delete_message(reply.chat.id, reply.id)
         self.BOT.send_message(
             message.chat.id,
@@ -89,7 +97,7 @@ class SGBot():
         Returns:
             None
         """
-        if query != None:
+        if query is not None:
             artist, title = self.check_input(query)
         else:
             query = message.text
@@ -124,7 +132,7 @@ class SGBot():
         Returns:
             None
         """
-        if artist != None:
+        if artist is not None:
             artist_results = self.spotify.artist(
                 artist)
         else:
@@ -193,7 +201,8 @@ class SGBot():
             insert_json_data(data)
             self.logger.info("Sent successfully and added to db")
 
-    def send_preview(self, chat_id, title, performer, reply_markup, preview_url, hashtag):
+    def send_preview(self, chat_id, title, performer,
+                     reply_markup, preview_url, hashtag):
         if preview_url is None:
             self.BOT.send_message(chat_id,
                                   text=f"No Preview found for `{title}`", reply_markup=reply_markup)
@@ -207,7 +216,8 @@ class SGBot():
                                 reply_markup=reply_markup,
                                 caption=hashtag)
 
-    def send_audios_or_previews(self, track_details, caption, chat_id, send_photo):
+    def send_audios_or_previews(
+            self, track_details, chat_id, send_photo, caption=""):
         track_url = track_details['external_url']
         title = track_details["name"]
         performer = ", ".join(track_details['artists'])
@@ -232,7 +242,6 @@ class SGBot():
         if self.isPreview:
             self.send_preview(chat_id, title, performer,
                               markup, preview_url, hashtag)
-            self.sgbot.isPreview = False
 
         elif len(message_id) > 0:
             copied = self.BOT.copy_message(
@@ -240,7 +249,7 @@ class SGBot():
             try:
                 self.BOT.edit_message_reply_markup(
                     chat_id, copied.message_id, reply_markup=markup)
-            except:
+            except BaseException:
                 pass
 
         else:
@@ -265,7 +274,7 @@ class SGBot():
                 track_details = self.spotify.get_chosen_song(id)
                 caption = f'👤Artist: `{track_details["artists"]}`\n🔢Track : {track_details["track_no"]} of {album_details["total_tracks"]}\n🎵Song : `{track_details["name"]}`\n'
                 self.send_audios_or_previews(
-                    track_details, caption, chat_id, False)
+                    track_details, chat_id, False, caption=caption)
             self.BOT.send_message(
                 chat_id,
                 f'Those are all the {track_details["total_tracks"]} track(s) in "`{album_details["name"]}`" by `{", ".join(album_details["artists"])}`. 💪!',
@@ -281,13 +290,14 @@ class SGBot():
         for song in playlist["tracks"]["items"]:
             id = song["track"]["id"]
             track_details = self.spotify.get_chosen_song(id)
-            self.send_audios_or_previews(track_details, "", chat_id, False)
+            self.send_audios_or_previews(track_details, chat_id, False)
         self.BOT.send_message(
             chat_id,
             f'Those are all the {playlist["tracks"]["total"]} track(s) in "`{description}`" by `{owner}`. 💪!',
             reply_markup=self.keyboard.start_markup)
 
-    def send_checker(self, list_of_type: list, chat_id: str, current_page: int):
+    def send_checker(self, list_of_type: list,
+                     chat_id: str, current_page: int):
         """
         Requests user to specify the song to get with appropriate reply markup
         """
@@ -306,9 +316,9 @@ class SGBot():
             self.make_id = make.id
 
     def check_input(self, query):
-        if "," not in query:
-            query + ","
-        data_list = query.split(",")
+        if "-" not in query:
+            query + "-"
+        data_list = query.split("-")
         title = data_list[0]
         try:
             artist = data_list[1]
@@ -335,6 +345,9 @@ class SGBot():
         elif data.startswith("result_"):  # Handle for possible results of an artist
             self.BOT.answer_callback_query(call.id)
             self.handle_result_callback(call)
+        elif data.startswith("all_"):  # Handle for possible results of an artist
+            self.BOT.answer_callback_query(call.id)
+            self.handle_all_callback(call)            
         else:
             self.BOT.delete_message(call.message.chat.id, call.message.id)
             self.get_album_songs(data, call.message.chat.id)
@@ -401,7 +414,7 @@ class SGBot():
         except Exception as e:
             self.logger.error(e)
             lyrics = None
-        if lyrics == None or lyrics == "":
+        if lyrics is None or lyrics == "":
             self.BOT.answer_callback_query(
                 call.id, text=f"'{title}' lyrics not found!", show_alert=True)
         else:
@@ -421,6 +434,16 @@ class SGBot():
                                           reply_markup=self.keyboard.start_markup)
                     except Exception as e:
                         self.BOT.answer_callback_query(call.id, e)
+    def handle_all_callback(self, call):
+        no_of_songs = call.data.split("_")[1]
+        hot_100 = billboard.ChartData("hot-100")[:int(no_of_songs)]
+        track_data = [self.spotify.song(artist=item.artist, title=item.title)[
+            0] for item in hot_100]
+        for song in track_data:
+            track_details = self.spotify.get_chosen_song(song["uri"])
+            self.send_audios_or_previews(track_details, call.message.chat.id, False)
+                
+
 
     def handle_close_callback(self, call):
         self.BOT.delete_message(call.message.chat.id, call.message.id)
@@ -428,6 +451,6 @@ class SGBot():
     def send_chosen_track(self, track_details, chat_id):
         duration = track_details["duration_ms"]
         minutes = duration // 60000
-        seconds = int((duration % 60000)/1000)
+        seconds = int((duration % 60000) / 1000)
         caption = f'👤Artist: `{", ".join(track_details["artists"])}`\n🎵Song : `{track_details["name"]}`\n━━━━━━━━━━━━\n📀Album : `{track_details["album"]}`\n🔢Track : {track_details["track_no"]} of {track_details["total_tracks"]}\n⭐️ Released: `{track_details["release_date"]}`\n⌚Duration: `{minutes}:{seconds}`\n🔞Is Explicit: {track_details["explicit"]}\n'
-        self.send_audios_or_previews(track_details, caption, chat_id, True)
+        self.send_audios_or_previews(track_details, chat_id, True, caption=caption)

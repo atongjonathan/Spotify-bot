@@ -34,7 +34,7 @@ class Keyboard():
             menu.append(footer_buttons)
         return menu
 
-    def keyboard_for_results(self, results: list):
+    def keyboard_for_results(self, results: list, isTrending=False, isPreview=False):
         """
         Makes keyboard for possible artists or songs
 
@@ -49,6 +49,8 @@ class Keyboard():
         """
         close = types.InlineKeyboardButton(
             "Close", callback_data=f'close_make')
+        all = types.InlineKeyboardButton(
+            "Get all", callback_data=f'all_{len(results)}_{isPreview}')
         buttons = []
         for idx, result in enumerate(results):
             button = types.InlineKeyboardButton(
@@ -56,6 +58,8 @@ class Keyboard():
             buttons.append(button)
         keyboard = types.InlineKeyboardMarkup(
             self.build_menu(buttons, n_cols=4))
+        if isTrending:
+            keyboard.add(all)
         keyboard.add(close)
         return keyboard
 

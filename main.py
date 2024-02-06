@@ -48,7 +48,7 @@ def artist(message):
 @bot.message_handler(commands=["song"])
 def song(message,):
     sgbot.isPreview = False
-    song_reply = "Send me the song title followed by the artist separated by a comma for optimal results"
+    song_reply = 'Send me the song title followed by the artist separated by a "-" for optimal results'
     sgbot.get_search_query(message, "song", sgbot.search_song, song_reply)
 
 
@@ -63,6 +63,7 @@ def trending(message):
             bot.reply_to(
                 message, "Number requested to should be less than 100")
             return
+    sgbot.isPreview = False
     sgbot.search_trending(message, no_of_songs=no_of_songs)
 
 
@@ -96,7 +97,7 @@ def ping(message):
 @bot.message_handler(commands=["snippet"])
 def preview(message):
     sgbot.isPreview = True
-    song_reply = "Send me the song title followed by the artist separated by a comma for optimal results"
+    song_reply = 'Send me the song title followed by the artist separated by a "-" for optimal results'
     sgbot.get_search_query(message, "snippet", sgbot.search_song, song_reply)
 
 
