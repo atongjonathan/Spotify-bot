@@ -16,7 +16,7 @@ from db import insert_json_data, get_all_data, create_table
 
 class SGBot():
     def __init__(self) -> None:
-        self.BOT = telebot.TeleBot('6947530576:AAEcuqnxIZ44oTbCCI6A2AK3PiJevmJ7CwI', parse_mode='markdown')
+        self.BOT = telebot.TeleBot(TELEGRAM_BOT_TOKEN, parse_mode='markdown')
         self.isPreview = False
         self.keyboards_list = []
         self.spotify = Spotify()
